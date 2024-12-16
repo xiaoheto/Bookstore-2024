@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/src.dir/Account.cpp.o CMakeFiles/src.dir/Book.cpp.o CMakeFiles/src.dir/CommandPaser.cpp.o CMakeFiles/src.dir/Log.cpp.o CMakeFiles/src.dir/main.cpp.o CMakeFiles/src.dir/Utils.cpp.o -o src 
