@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/bin.dir/AccountManager.cpp.o CMakeFiles/bin.dir/LogManager.cpp.o CMakeFiles/bin.dir/CommandPaser.cpp.o CMakeFiles/bin.dir/BookManager.cpp.o CMakeFiles/bin.dir/main.cpp.o -o bin 
