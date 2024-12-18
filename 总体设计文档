@@ -1,0 +1,49 @@
+# 总体设计文档
+### 项目名称 Bookstore
+#### 文档作者 何子宁
+
+### 程序功能
+**1.操作账户** 注册、登陆账户
+需要把账户信息储存在文件中。
+**2.操作图书**
+标准要求文档中对图书的操作，储存图书信息。
+**3.管理日志**
+储存工作日志信息
+
+###实现方式
+整体采用块状链表实现。
+#### 1.Memorypool
+##### 用来管理文件，一个memorypool对应一个文件
+构造函数：构造一个文件
+initialise：初始化文件
+get_information：读出第n个int赋给tmp
+write_information：把tmp写入第n个int的位置
+write：在文件合适位置写入类对象
+read：读出位置索引index对应的T对象的值并赋值给t
+update：更新index对应的对象
+delete：删除index对应的对象
+#### 2.BlockLink
+##### 用于操作块状链表
+**Book类**
+用于储存书籍的信息
+**Block类**
+用于储存块
+构造函数
+add：往块中添加
+delete：删除
+search：查找书籍
+**block_file类**
+用于进行与文件有关的操作，包括裂块、并块
+#### 3.error
+##### 用于处理错误信息
+#### 4.AccountManager
+##### 用于储存账户信息
+一个结构体User_info储存需要的信息
+**User类**
+user_switch：切换账户
+LogOut：退出登录
+register：注册
+change_pass：修改密码
+add_User：添加账户
+remove_User：移除账户
+User_select：选书
