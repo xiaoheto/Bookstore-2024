@@ -1,3 +1,0 @@
-/mnt/c/Users/43741/Desktop/src/cmake-build-debug/CMakeFiles/src.dir
-/mnt/c/Users/43741/Desktop/src/cmake-build-debug/CMakeFiles/edit_cache.dir
-/mnt/c/Users/43741/Desktop/src/cmake-build-debug/CMakeFiles/rebuild_cache.dir
