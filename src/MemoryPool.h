@@ -56,8 +56,7 @@ public:
         int index = file.tellp();
         file.write(reinterpret_cast<char*>(&t), sizeofT);
         file.close();
-        return index;
-        /* your code here */
+        return index；
     }
 
     void update(T &t, const int index) {
