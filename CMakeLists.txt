@@ -16,4 +16,5 @@ add_executable(Bookstore_2024
     src/LogManager.cpp
     src/LogManager.h
     src/main.cpp
-    src/MemoryRiver.h)
+    src/MemoryRiver.h
+        src/error.h)
