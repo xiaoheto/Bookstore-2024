@@ -15,6 +15,7 @@ private:
     char split_char;//分隔字符
 public:
     int count = 0;
+
     Command() = default;
 
     Command(const Command &rhs);
@@ -31,9 +32,7 @@ public:
 
     void reset();
 
-    friend std::istream &operator>>(std::istream &input, Command &obj);
-
-    friend std::ostream &operator<<(std::ostream &os, const Command &command);
+    friend std::istream &operator >>(std::istream &in,Command &obj);
 
     void setSplit(char new_delimiter);
 };

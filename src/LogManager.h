@@ -44,13 +44,13 @@ private:
 public:
     LogManager();
 
+    void ShowFinance(int need = -1);
+
     void Report_employee(Command& line, AccountManager& accounts);
 
     void Report_myself(Command &line, AccountManager& accounts);
 
     void AddLog(Log& log); // 把 log 放进文件的同时还需要检查是否有交易
-
-    void ShowFinance(int need = -1); // 若为 -1，则显示全部
 
     void Log_ch(Command& line); // log command，检查有无额外的 token
 };

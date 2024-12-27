@@ -10,6 +10,14 @@
 #include "error.h"
 #include "MemoryRiver.h"
 #include "BlockLink.h"
+
+bool isWishinAscll(char input) {
+    if (input < 0 || input > 127) {
+        return false;
+    }
+    return true;
+}
+
 int main() {
     int lineCount = 0;
     std::string input;
@@ -21,7 +29,7 @@ int main() {
         try {
             Command command(input);
             for (int i = 0;i < input.length(); ++i) {
-                if (input[i] < 0 || input[i] > 127) {
+                if (! isWishinAscll(input[i])) {
                     throw Error("Invalid\n");
                 }
             }
@@ -96,6 +104,9 @@ int main() {
         }
         catch(Error &message) {
             std::cout << message.what();
+        }
+        catch(std::invalid_argument &message) {
+            std::cout << 'Invalid\n';
         }
     }
     return 0;

@@ -24,4 +24,3 @@ void LogManager::ShowFinance(int need) {
 void LogManager::AddLog(Log &log) {
     logStorage.write(log);
 }
-
