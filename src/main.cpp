@@ -22,7 +22,7 @@
     }
     return 0;
 }*/
-bool isWishinAscll(char input) {
+bool isWithinAscll(char input) {
     if (input < 0 || input > 127) {
         return false;
     }
@@ -30,17 +30,15 @@ bool isWishinAscll(char input) {
 }
 
 int main() {
-    int lineCount = 0;
     std::string input;
     LogManager logs;
     BookManager books;
     AccountManager accounts;
     while(getline(std::cin,input)) {
-        lineCount++;
         try {
             Command command(input);
             for (int i = 0;i < input.length(); ++i) {
-                if (! isWishinAscll(input[i])) {
+                if (! isWithinAscll(input[i])) {
                     throw Error("Invalid\n");
                 }
             }//是否合法
