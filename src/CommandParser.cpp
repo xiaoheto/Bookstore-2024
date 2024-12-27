@@ -1,5 +1,11 @@
 #include "CommandParser.h"
 
+//class Command
+
+Command::Command(char _split_char) {
+    split_char = _split_char;
+}
+
 Command::Command(const Command &rhs) {
     input = rhs.input;
     position = rhs.position;
@@ -7,77 +13,57 @@ Command::Command(const Command &rhs) {
     count = rhs.count;
 }
 
-Command::Command(char _delimiter) {
-    split_char = _delimiter;
-}
-
-Command::Command(const std::string &input_, char delimiter_) {
-    split_char = delimiter_;
-    input = input_;
-    count = 0;//过滤行首的分隔符
-    while (input[count] == delimiter_) {
-        count++;
-    }
+Command::Command(const std::string &in, char _split_char) {
+    split_char = _split_char;
+    input = in;
+    position = 0;//过滤行首的分隔符
+    while (input[position] == split_char) position++;
     countArguments();
 }
 
+string Command::getNext() {
+    int j = position,len = input.length();
+    string temp = "";
+    if (position >= len) return temp;
 
-std::string Command::getNext() {
-    int len = input.length();
-    std::string temp = "";
-    // 检查是否已经到达字符串末尾
-    if (position >= len) {
-        return temp;
-    }
-    // 确保首先跳过多余的分隔符
-    while (position < len && input[position] == split_char) position++;
-    // 提取下一个参数
-    int j = position;
-    while (j < len && input[j] != split_char && input[j] != '\r') {
+    while (input[j] != split_char && j < len && input[j] != '\r'){
         temp += input[j];
         j++;
     }
-    // 跳过下一个参数后的分隔符
-    while (j < len && input[j] == split_char && input[j] != '\r') {
-        j++;
-    }
+
+    while (input[j] == split_char && j < len && input[j] != '\r') j++;
     position = j;
     return temp;
 }
 
-
 void Command::countArguments() {
     int len = input.length(),i = 0,j;
-    //注意,buffer中有末尾的/r
-    while (input[i] == split_char) {
-        i++;
-    }
+    //注意,input中有末尾的/r
+    while (input[i] == split_char) i++;
     while (i < len && input[i] != '\r') {
         j = i;
         while (input[j] != split_char && j < len && input[j] != '\r'){
             j++;
         }
-        if (i != j) {
-            count++;
-        }
+        if (i != j) count++;
         while (input[j] == split_char && j < len) j++;
         i = j;
     }
 }
 
 void Command::reset() {
-    split_char = ' ';
     input = "";
     position = 0;
     count = 0;
+    split_char = ' ';
+    return;
 }
 
-std::istream &operator>>(std::istream &in, Command &obj) {
-    in >> obj.input;
-    return in;
+istream &operator>>(istream &input, Command &obj) {
+    input >> obj.input;
+    return input;
 }
 
-
-void Command::setSplit(char newSplit) {
-    split_char = newSplit;
+void Command::setSplit(char new_split_char) {
+    split_char = new_split_char;
 }

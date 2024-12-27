@@ -54,16 +54,16 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/c/Users/43741/Bookstore-2024
+CMAKE_SOURCE_DIR = /mnt/c/Users/43741/Desktop/Bookstore-2024
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug
+CMAKE_BINARY_DIR = /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug
 
 #=============================================================================
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/Bookstore_2024.dir/all
+all: CMakeFiles/code.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +71,34 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/Bookstore_2024.dir/clean
+clean: CMakeFiles/code.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/Bookstore_2024.dir
+# Target rules for target CMakeFiles/code.dir
 
 # All Build rule for target.
-CMakeFiles/Bookstore_2024.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/c/Users/43741/Bookstore-2024/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target Bookstore_2024"
-.PHONY : CMakeFiles/Bookstore_2024.dir/all
+CMakeFiles/code.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target code"
+.PHONY : CMakeFiles/code.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/Bookstore_2024.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug/CMakeFiles 6
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/Bookstore_2024.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug/CMakeFiles 0
-.PHONY : CMakeFiles/Bookstore_2024.dir/rule
+CMakeFiles/code.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles 6
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/code.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles 0
+.PHONY : CMakeFiles/code.dir/rule
 
 # Convenience name for target.
-Bookstore_2024: CMakeFiles/Bookstore_2024.dir/rule
-.PHONY : Bookstore_2024
+code: CMakeFiles/code.dir/rule
+.PHONY : code
 
 # clean rule for target.
-CMakeFiles/Bookstore_2024.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/clean
-.PHONY : CMakeFiles/Bookstore_2024.dir/clean
+CMakeFiles/code.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/clean
+.PHONY : CMakeFiles/code.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

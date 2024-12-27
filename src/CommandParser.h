@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+using namespace std;
 
 class Command {
 private:
@@ -32,7 +33,7 @@ public:
 
     void reset();
 
-    friend std::istream &operator >>(std::istream &in,Command &obj);
+    friend std::istream &operator >> (std::istream &in,Command &obj);
 
     void setSplit(char new_delimiter);
 };

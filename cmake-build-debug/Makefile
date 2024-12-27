@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/c/Users/43741/Bookstore-2024
+CMAKE_SOURCE_DIR = /mnt/c/Users/43741/Desktop/Bookstore-2024
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug
+CMAKE_BINARY_DIR = /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug/CMakeFiles /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Bookstore-2024/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -117,24 +117,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named Bookstore_2024
+# Target rules for targets named code
 
 # Build rule for target.
-Bookstore_2024: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Bookstore_2024
-.PHONY : Bookstore_2024
+code: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 code
+.PHONY : code
 
 # fast build rule for target.
-Bookstore_2024/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/build
-.PHONY : Bookstore_2024/fast
+code/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/build
+.PHONY : code/fast
 
 src/AccountManager.o: src/AccountManager.cpp.o
 .PHONY : src/AccountManager.o
 
 # target to build an object file
 src/AccountManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/AccountManager.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/AccountManager.cpp.o
 .PHONY : src/AccountManager.cpp.o
 
 src/AccountManager.i: src/AccountManager.cpp.i
@@ -142,7 +142,7 @@ src/AccountManager.i: src/AccountManager.cpp.i
 
 # target to preprocess a source file
 src/AccountManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/AccountManager.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/AccountManager.cpp.i
 .PHONY : src/AccountManager.cpp.i
 
 src/AccountManager.s: src/AccountManager.cpp.s
@@ -150,7 +150,7 @@ src/AccountManager.s: src/AccountManager.cpp.s
 
 # target to generate assembly for a file
 src/AccountManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/AccountManager.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/AccountManager.cpp.s
 .PHONY : src/AccountManager.cpp.s
 
 src/BookManager.o: src/BookManager.cpp.o
@@ -158,7 +158,7 @@ src/BookManager.o: src/BookManager.cpp.o
 
 # target to build an object file
 src/BookManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/BookManager.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/BookManager.cpp.o
 .PHONY : src/BookManager.cpp.o
 
 src/BookManager.i: src/BookManager.cpp.i
@@ -166,7 +166,7 @@ src/BookManager.i: src/BookManager.cpp.i
 
 # target to preprocess a source file
 src/BookManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/BookManager.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/BookManager.cpp.i
 .PHONY : src/BookManager.cpp.i
 
 src/BookManager.s: src/BookManager.cpp.s
@@ -174,7 +174,7 @@ src/BookManager.s: src/BookManager.cpp.s
 
 # target to generate assembly for a file
 src/BookManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/BookManager.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/BookManager.cpp.s
 .PHONY : src/BookManager.cpp.s
 
 src/CommandParser.o: src/CommandParser.cpp.o
@@ -182,7 +182,7 @@ src/CommandParser.o: src/CommandParser.cpp.o
 
 # target to build an object file
 src/CommandParser.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/CommandParser.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/CommandParser.cpp.o
 .PHONY : src/CommandParser.cpp.o
 
 src/CommandParser.i: src/CommandParser.cpp.i
@@ -190,7 +190,7 @@ src/CommandParser.i: src/CommandParser.cpp.i
 
 # target to preprocess a source file
 src/CommandParser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/CommandParser.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/CommandParser.cpp.i
 .PHONY : src/CommandParser.cpp.i
 
 src/CommandParser.s: src/CommandParser.cpp.s
@@ -198,7 +198,7 @@ src/CommandParser.s: src/CommandParser.cpp.s
 
 # target to generate assembly for a file
 src/CommandParser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/CommandParser.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/CommandParser.cpp.s
 .PHONY : src/CommandParser.cpp.s
 
 src/LogManager.o: src/LogManager.cpp.o
@@ -206,7 +206,7 @@ src/LogManager.o: src/LogManager.cpp.o
 
 # target to build an object file
 src/LogManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/LogManager.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/LogManager.cpp.o
 .PHONY : src/LogManager.cpp.o
 
 src/LogManager.i: src/LogManager.cpp.i
@@ -214,7 +214,7 @@ src/LogManager.i: src/LogManager.cpp.i
 
 # target to preprocess a source file
 src/LogManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/LogManager.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/LogManager.cpp.i
 .PHONY : src/LogManager.cpp.i
 
 src/LogManager.s: src/LogManager.cpp.s
@@ -222,7 +222,7 @@ src/LogManager.s: src/LogManager.cpp.s
 
 # target to generate assembly for a file
 src/LogManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/LogManager.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/LogManager.cpp.s
 .PHONY : src/LogManager.cpp.s
 
 src/main.o: src/main.cpp.o
@@ -230,7 +230,7 @@ src/main.o: src/main.cpp.o
 
 # target to build an object file
 src/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/main.cpp.o
 .PHONY : src/main.cpp.o
 
 src/main.i: src/main.cpp.i
@@ -238,7 +238,7 @@ src/main.i: src/main.cpp.i
 
 # target to preprocess a source file
 src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/main.cpp.i
 .PHONY : src/main.cpp.i
 
 src/main.s: src/main.cpp.s
@@ -246,7 +246,7 @@ src/main.s: src/main.cpp.s
 
 # target to generate assembly for a file
 src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Bookstore_2024.dir/build.make CMakeFiles/Bookstore_2024.dir/src/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/code.dir/build.make CMakeFiles/code.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
 # Help Target
@@ -257,7 +257,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... Bookstore_2024"
+	@echo "... code"
 	@echo "... src/AccountManager.o"
 	@echo "... src/AccountManager.i"
 	@echo "... src/AccountManager.s"

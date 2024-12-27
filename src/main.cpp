@@ -11,17 +11,19 @@
 #include "error.h"
 #include "MemoryRiver.h"
 #include "BlockLink.h"
-
-/*int main() {
+/*
+int main() {
     std::string command;
     getline(std::cin,command);
     Command cmd(command);
     std::string order = cmd.getNext();
+    std::cout << order << '\n';
     if (order == "exit" || order == "quit") {
         return 0;
     }
     return 0;
-}*/
+}
+*/
 bool isWithinAscll(char input) {
     if (input < 0 || input > 127) {
         return false;
@@ -41,7 +43,7 @@ int main() {
                 if (! isWithinAscll(input[i])) {
                     throw Error("Invalid\n");
                 }
-            }//是否合法
+            }
             if(command.count == 0) {
                 continue;
             }//是否是空行

@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/c/Users/43741/Desktop/Bookstore实现/src
+CMAKE_SOURCE_DIR = /mnt/c/Users/43741/Desktop/Bookstore-2024/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/c/Users/43741/Desktop/Bookstore实现/src/cmake-build-debug
+CMAKE_BINARY_DIR = /mnt/c/Users/43741/Desktop/Bookstore-2024/src/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore实现/src/cmake-build-debug/CMakeFiles /mnt/c/Users/43741/Desktop/Bookstore实现/src/cmake-build-debug//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore-2024/src/cmake-build-debug/CMakeFiles /mnt/c/Users/43741/Desktop/Bookstore-2024/src/cmake-build-debug//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore实现/src/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/43741/Desktop/Bookstore-2024/src/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -116,139 +116,6 @@ depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named src
-
-# Build rule for target.
-src: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 src
-.PHONY : src
-
-# fast build rule for target.
-src/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/build
-.PHONY : src/fast
-
-AccountManager.o: AccountManager.cpp.o
-.PHONY : AccountManager.o
-
-# target to build an object file
-AccountManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/AccountManager.cpp.o
-.PHONY : AccountManager.cpp.o
-
-AccountManager.i: AccountManager.cpp.i
-.PHONY : AccountManager.i
-
-# target to preprocess a source file
-AccountManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/AccountManager.cpp.i
-.PHONY : AccountManager.cpp.i
-
-AccountManager.s: AccountManager.cpp.s
-.PHONY : AccountManager.s
-
-# target to generate assembly for a file
-AccountManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/AccountManager.cpp.s
-.PHONY : AccountManager.cpp.s
-
-BookManager.o: BookManager.cpp.o
-.PHONY : BookManager.o
-
-# target to build an object file
-BookManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/BookManager.cpp.o
-.PHONY : BookManager.cpp.o
-
-BookManager.i: BookManager.cpp.i
-.PHONY : BookManager.i
-
-# target to preprocess a source file
-BookManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/BookManager.cpp.i
-.PHONY : BookManager.cpp.i
-
-BookManager.s: BookManager.cpp.s
-.PHONY : BookManager.s
-
-# target to generate assembly for a file
-BookManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/BookManager.cpp.s
-.PHONY : BookManager.cpp.s
-
-CommandParser.o: CommandParser.cpp.o
-.PHONY : CommandParser.o
-
-# target to build an object file
-CommandParser.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/CommandParser.cpp.o
-.PHONY : CommandParser.cpp.o
-
-CommandParser.i: CommandParser.cpp.i
-.PHONY : CommandParser.i
-
-# target to preprocess a source file
-CommandParser.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/CommandParser.cpp.i
-.PHONY : CommandParser.cpp.i
-
-CommandParser.s: CommandParser.cpp.s
-.PHONY : CommandParser.s
-
-# target to generate assembly for a file
-CommandParser.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/CommandParser.cpp.s
-.PHONY : CommandParser.cpp.s
-
-LogManager.o: LogManager.cpp.o
-.PHONY : LogManager.o
-
-# target to build an object file
-LogManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/LogManager.cpp.o
-.PHONY : LogManager.cpp.o
-
-LogManager.i: LogManager.cpp.i
-.PHONY : LogManager.i
-
-# target to preprocess a source file
-LogManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/LogManager.cpp.i
-.PHONY : LogManager.cpp.i
-
-LogManager.s: LogManager.cpp.s
-.PHONY : LogManager.s
-
-# target to generate assembly for a file
-LogManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/LogManager.cpp.s
-.PHONY : LogManager.cpp.s
-
-main.o: main.cpp.o
-.PHONY : main.o
-
-# target to build an object file
-main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/main.cpp.o
-.PHONY : main.cpp.o
-
-main.i: main.cpp.i
-.PHONY : main.i
-
-# target to preprocess a source file
-main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/main.cpp.i
-.PHONY : main.cpp.i
-
-main.s: main.cpp.s
-.PHONY : main.s
-
-# target to generate assembly for a file
-main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/src.dir/build.make CMakeFiles/src.dir/main.cpp.s
-.PHONY : main.cpp.s
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -257,22 +124,6 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... src"
-	@echo "... AccountManager.o"
-	@echo "... AccountManager.i"
-	@echo "... AccountManager.s"
-	@echo "... BookManager.o"
-	@echo "... BookManager.i"
-	@echo "... BookManager.s"
-	@echo "... CommandParser.o"
-	@echo "... CommandParser.i"
-	@echo "... CommandParser.s"
-	@echo "... LogManager.o"
-	@echo "... LogManager.i"
-	@echo "... LogManager.s"
-	@echo "... main.o"
-	@echo "... main.i"
-	@echo "... main.s"
 .PHONY : help
 
 
