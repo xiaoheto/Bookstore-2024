@@ -5,8 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 include_directories(src)
 
-add_executable(Bookstore_2024
-    code
+add_executable(code
     src/main.cpp
     src/AccountManager.cpp
     src/AccountManager.h
