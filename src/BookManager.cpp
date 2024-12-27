@@ -6,6 +6,7 @@ bool isKwBnAnValid(std::string &input) {
             return false;
         }
     }
+    return true;
 }
 
 BookISBN::BookISBN(std::string isbn) {

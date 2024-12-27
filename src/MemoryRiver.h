@@ -1,11 +1,5 @@
-//
-// Created by 43741 on 2024/12/22.
-//
-
 #ifndef MEMORYRIVER_H
 #define MEMORYRIVER_H
-#ifndef BPT_MEMORYRIVER_HPP
-#define BPT_MEMORYRIVER_HPP
 
 #include <fstream>
 
@@ -101,6 +95,4 @@ public:
     }
 };
 
-
-#endif //BPT_MEMORYRIVER_HPP
 #endif //MEMORYRIVER_H

@@ -1,6 +1,7 @@
 //
 // Created by 43741 on 2024/12/22.
 //
+
 #include <exception>
 #include <iostream>
 
@@ -11,6 +12,16 @@
 #include "MemoryRiver.h"
 #include "BlockLink.h"
 
+/*int main() {
+    std::string command;
+    getline(std::cin,command);
+    Command cmd(command);
+    std::string order = cmd.getNext();
+    if (order == "exit" || order == "quit") {
+        return 0;
+    }
+    return 0;
+}*/
 bool isWishinAscll(char input) {
     if (input < 0 || input > 127) {
         return false;
@@ -32,12 +43,10 @@ int main() {
                 if (! isWishinAscll(input[i])) {
                     throw Error("Invalid\n");
                 }
-            }
-            //是否都在ASCLL范围内
+            }//是否合法
             if(command.count == 0) {
                 continue;
-            }
-            //是否是空行
+            }//是否是空行
             std::string order = command.getNext();
             if (order == "quit" || order == "exit") {
                 return 0;
