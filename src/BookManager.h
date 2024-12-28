@@ -1,46 +1,52 @@
-//
-// Created by 43741 on 2024/12/22.
-//
-
 #ifndef BOOKMANAGER_H
 #define BOOKMANAGER_H
+
 #include <iomanip>
 #include <queue>
 #include <set>
 #include "CommandParser.h"
 #include "AccountManager.h"
 #include "LogManager.h"
+#include "validator.h"
+
 struct BookISBN {
-    char ISBN[21];
+    char ISBN[21];  // 20字符 + 结束符
+    
     BookISBN() = default;
-    BookISBN(std::string isbn);
-    bool operator == (const BookISBN &other)const;
-    bool operator < (const BookISBN &other)const;
+    explicit BookISBN(const std::string &isbn);
+    
+    bool operator==(const BookISBN &other) const;
+    bool operator<(const BookISBN &other) const;
 };
 
 struct BookName {
-    char Bookname[61];
+    char Bookname[61];  // 60字符 + 结束符
+    
     BookName() = default;
-    BookName(std::string bookname);
-    bool operator == (const BookName &other)const;
-    bool operator < (const BookName &other)const;
+    explicit BookName(const std::string &bookname);
+    
+    bool operator==(const BookName &other) const;
+    bool operator<(const BookName &other) const;
 };
 
 struct AuthorName {
     char Author[61];
+    
     AuthorName() = default;
-    AuthorName(std::string authorname);
-
-    bool operator == (const AuthorName &other)const;
-    bool operator < (const AuthorName &other)const;
+    explicit AuthorName(const std::string &authorname);
+    
+    bool operator==(const AuthorName &other) const;
+    bool operator<(const AuthorName &other) const;
 };
 
 struct KeyWord {
     char Keyword[61];
+    
     KeyWord() = default;
-    KeyWord(std::string keyword);
-    bool operator == (const KeyWord &other)const;
-    bool operator < (const KeyWord &other)const;
+    explicit KeyWord(const std::string &keyword);
+    
+    bool operator==(const KeyWord &other) const;
+    bool operator<(const KeyWord &other) const;
 };
 
 class Book {
@@ -50,46 +56,67 @@ private:
     BookName book_name;
     AuthorName author_name;
     KeyWord key_word;
-    int Quantity = 0;
-    int Price = 0;
-    int TotalCost = 0;
+    double Price;
+    int Quantity;
+    double TotalCost;
+    
     friend class BookManager;
 public:
-    Book() = default;
-    Book(int id,std::string &isbn,std::string bookName,std::string authorName,std::string keyWord,
-        int quantity,int price,int totalcost);
-    Book(int id,std::string isbn);
+    Book() : book_id(0), Price(0), Quantity(0), TotalCost(0) {}
+    
+    // 完整构造函数
+    Book(int id, const std::string &isbn, const std::string &bookName, 
+         const std::string &authorName, const std::string &keyWord,
+         double price, int quantity, double totalcost);
+    
+    // 仅ISBN构造函数
+    Book(int id, const std::string &isbn);
+    
     bool operator<(const Book &rhs) const;
-
     bool operator>(const Book &rhs) const;
-
     bool operator<=(const Book &rhs) const;
-
     bool operator>=(const Book &rhs) const;
-
-    friend std::ostream &operator << (std::ostream&out,const Book &book);
+    
+    friend std::ostream &operator<<(std::ostream &out, const Book &book);
 };
 
 class BookManager {
 private:
     int bookCount;
-    MemoryRiver<Book>BookStorage;
+    MemoryRiver<Book> BookStorage;
     DataFile BookID_pos;
     DataFile BookISBN_pos;
     DataFile BookName_pos;
     DataFile Author_pos;
     DataFile Keyword_pos;
+
+    // 私有辅助函数
+    bool isValidBookString(const std::string &str, int maxLen) const;
+    void processKeywords(const std::string &keywords, std::vector<std::string> &result) const;
+    void updateIndexes(const Book &oldBook, const Book &newBook, int pos);
+    Book* findBookByISBN(const std::string &isbn) const;
+    void validateSelected(const AccountManager &accounts) const;
+
 public:
     BookManager();
-
-    void Show(Command &input,AccountManager &account,LogManager &log);
-
+    
+    // 图书查询
+    void Show(Command &input, AccountManager &account, LogManager &log);
+    
+    // 图书购买
     void Buy(Command &input, AccountManager &accounts, LogManager &logs);
-
-    void Select(Command &input, AccountManager &accounts, LogManager &logs); // 检查是否有权限，检查是否有 ISBN，然后选中
-
-    void Modify(Command &input, AccountManager &accounts, LogManager &logs); // 检查是否有权限
-
-    void ImportBook(Command &input, AccountManager &accounts, LogManager &logs); // 检查是否有权限
+    
+    // 选择图书
+    void Select(Command &input, AccountManager &accounts, LogManager &logs);
+    
+    // 修改图书信息
+    void Modify(Command &input, AccountManager &accounts, LogManager &logs);
+    
+    // 图书进货
+    void ImportBook(Command &input, AccountManager &accounts, LogManager &logs);
+    
+    // 获取当前图书总数
+    int getBookCount() const { return bookCount; }
 };
-#endif //BOOKMANAGER_H
+
+#endif // BOOKMANAGER_H
