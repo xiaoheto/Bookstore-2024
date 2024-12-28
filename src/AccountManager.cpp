@@ -64,6 +64,7 @@ AccountManager::AccountManager() {
 
         account_count = 1;
         accountStorage.write_info(account_count, 1);
+        userId_pos.insert_node(DataNode("root",pos));
 
         if (!userId_pos.insert_node(DataNode("root", pos))) {
             throw Error("Invalid\n");
@@ -77,20 +78,24 @@ void AccountManager::logIn(Command &input) {
     }
 
     std::string user_id = input.getNext();
+    //std::cout << user_id << '\n';
     if (!Validator::isValidUserID(user_id)) {
         throw Error("Invalid\n");
     }
+    //std::cout << user_id << '\n';
 
     std::vector<int> ans;
     userId_pos.find_node(user_id, ans);
+    //std::cout << user_id << '\n';
     if (ans.empty()) {
+        std::cout << "empty";
         throw Error("Invalid\n");
     }
 
     Account temp;
     accountStorage.read(temp, ans[0]);
     std::string password = input.getNext();
-
+    //std::cout << password << '\n';
     int currentPrivilege = getCurrentPrivilege();
 
     if (!password.empty()) {

@@ -17,4 +17,5 @@ add_executable(code
     src/LogManager.cpp
     src/LogManager.h
     src/MemoryRiver.h
-        src/error.h)
+        src/error.h
+        src/validator.h)

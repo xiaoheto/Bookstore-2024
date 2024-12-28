@@ -212,11 +212,16 @@ public:
        blockStorage.initialise(file_name);
    }
 
-   void init(const std::string &file_name) {
+    void init(const std::string &file_name) {
        blockStorage.initialise(file_name);
-       blockCount = 0;
-       beg = 8;
-       blockStorage.write_info(blockCount, 1);
+
+       // 只在文件为空时初始化
+       blockStorage.get_info(blockCount, 1);
+       if (blockCount == 0) {
+           blockCount = 0;
+           beg = 8;  // 预留文件头空间
+           blockStorage.write_info(blockCount, 1);
+       }
    }
 
    ~DataFile() = default;

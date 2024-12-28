@@ -38,6 +38,9 @@ int main() {
            }
            if (order == "su") {
                accounts.logIn(command);
+               /*std::string user_id = command.getNext();
+               std::string password = command.getNext();
+               std::cout << user_id << ' ' << password;*/
            }
            else if (order == "logout") {
                accounts.logOut(command);

@@ -1,3 +1,3 @@
-/mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles/code.dir
-/mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles/edit_cache.dir
-/mnt/c/Users/43741/Desktop/Bookstore-2024/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/mnt/c/Users/43741/Desktop/Bookstore-2024实现/cmake-build-debug/CMakeFiles/code.dir
+/mnt/c/Users/43741/Desktop/Bookstore-2024实现/cmake-build-debug/CMakeFiles/edit_cache.dir
+/mnt/c/Users/43741/Desktop/Bookstore-2024实现/cmake-build-debug/CMakeFiles/rebuild_cache.dir
