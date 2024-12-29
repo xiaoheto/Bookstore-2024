@@ -1,5 +1,5 @@
-#ifndef BOOKSTORE_FILE_IO_H
-#define BOOKSTORE_FILE_IO_H
+#ifndef BOOKSTORE_MEMORYRIVER_H
+#define BOOKSTORE_MEMORYRIVER_H
 
 #include <fstream>
 
@@ -118,4 +118,4 @@ public:
     }
 };
 
-#endif //BOOKSTORE_FILE_IO_H
+#endif //BOOKSTORE_MEMORYRIVER_H
