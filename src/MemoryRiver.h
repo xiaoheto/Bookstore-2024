@@ -22,7 +22,6 @@ public:
 
     void initialise(string FN = "") {
         if (FN != "") file_name = FN;
-        std::remove(file_name.c_str());
         file.open(file_name, std::fstream::in | std::fstream::out);
         if (!file) {
             file.open(file_name, std::ofstream::out);
