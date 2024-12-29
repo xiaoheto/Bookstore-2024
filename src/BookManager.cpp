@@ -497,18 +497,13 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     std::string quantity_str = input.getNext();
     std::string total_cost_str = input.getNext();
 
-    int quantity;
-    double total_cost;
-
-    try {
-        quantity = std::stoi(quantity_str);
-        if (quantity <= 0) throw Error("Invalid\n");
-
-        total_cost = std::stod(total_cost_str);
-        if (total_cost < 0) throw Error("Invalid\n");
-    } catch (...) {
+    // 使用 Validator 进行验证
+    if (!Validator::isValidQuantity(quantity_str) || !Validator::isValidPrice(total_cost_str)) {
         throw Error("Invalid\n");
     }
+
+    int quantity = std::stoi(quantity_str);
+    double total_cost = std::stod(total_cost_str);
 
     // 获取图书信息
     std::vector<int> positions;
@@ -527,8 +522,11 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     // 添加日志
     Log importLog;
     importLog.behavoir = ActionType::IMPORTBOOK;
-    importLog.use = &accounts.loginStack.back().account;
+    importLog.use = nullptr;  // 避免使用悬挂指针
     importLog.isIncome = false;
     importLog.Amount = total_cost;
+    snprintf(importLog.description, sizeof(importLog.description),
+             "Import %d copies of book (ISBN: %s) with total cost %.2f",
+             quantity, book.ISBN.ISBN, total_cost);
     logs.AddLog(importLog);
 }
