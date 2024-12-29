@@ -50,11 +50,11 @@ bool AuthorName::operator<(const AuthorName &other) const {
     return strcmp(Author, other.Author) < 0;
 }
 
-KeyWord::KeyWord(const std::string &key_word) {
-    if (!Validator::isValidKeyword(key_word)) {
+KeyWord::KeyWord(const std::string &keyword) {
+    if (!Validator::isValidKeyword(keyword)) {
         throw Error("Invalid\n");
     }
-    strcpy(Keyword,key_word.c_str());
+    strcpy(Keyword,keyword.c_str());
     Keyword[60] = '\0';
 }
 
@@ -109,12 +109,12 @@ std::ostream &operator<<(std::ostream &out, const Book &book) {
 
 // BookManager 实现
 BookManager::BookManager() {
-    BookStorage.initialise("BookStorage");
-    BookID_pos.init("book_BookID_pos");
-    BookISBN_pos.init("BookISBN_pos");
-    BookName_pos.init("BookName_pos");
-    Author_pos.init("Author_pos");
-    Keyword_pos.init("Keyword_pos");
+    BookStorage.initialise("book_data");
+    BookID_pos.init("book_id_to_pos");
+    BookISBN_pos.init("isbn_to_pos");
+    BookName_pos.init("name_to_pos");
+    Author_pos.init("author_to_pos");
+    Keyword_pos.init("keyword_to_pos");
 
     BookStorage.get_info(bookCount, 1);
 }
@@ -129,131 +129,116 @@ void BookManager::validateSelected(const AccountManager &accounts) const {
     }
 }
 
-void BookManager::Show(Command &line, AccountManager &accounts, LogManager &logs) {
-    if (accounts.getCurrentPrivilege() < 1 ||
-        (line.count != 2 && line.count != 1)) {
+void BookManager::Show(Command &input, AccountManager &account, LogManager &log) {
+    if (input.count > 2) {
         throw Error("Invalid\n");
     }
 
-    string temp = line.getNext();
-    string _name, _isbn, _author, _keyword;
-    vector<int> ans;
+    std::string param = input.getNext();
+    std::vector<Book> results;
 
-    //没有参数,说明全部都要输出
-    if (temp.empty()) {
-        BookISBN_pos.find_all(ans);
-        //按照ISBN升序输出
-        if (!ans.empty()) {
-            for (int i = 0; i < ans.size(); ++i) {
-                Book temp;
-                BookStorage.read(temp, ans[i]);
-                cout << temp;
+    if (param.empty()) {
+        // 显示所有图书
+        std::vector<int> positions;
+        BookISBN_pos.find_all(positions);
+        for (int pos : positions) {
+            Book book;
+            if (BookStorage.read(book, pos)) {
+                results.push_back(book);
             }
-        } else {
-            cout << '\n';
         }
     }
-    else//否则开始匹配
-    if (temp.substr(0, 6) == "-name=" &&
-        temp[6] == '\"' && temp.back() == '\"') {
-        _name = temp.substr(7, temp.length() - 8);
-        if (_name.empty() || !Validator::isValidBookString(_name) || _name.length() > 60) {
+    else {
+        // 验证参数格式
+        if (param.length() < 6) {
             throw Error("Invalid\n");
-        } else {
-            BookName_pos.find_node(_name, ans);
-            if (!ans.empty()) {
-                priority_queue<Book,vector<Book>,greater<Book> > output;
-                for (int i = 0; i < ans.size(); ++i) {
-                    Book temp;
-                    BookStorage.read(temp, ans[i]);
-                    output.push(temp);
-                }
-                while (!output.empty()) {
-                    cout << output.top();
-                    output.pop();
-                }
-            } else {
-                cout << '\n';
-            }
         }
-    }
-    else
-    if (temp.substr(0, 9) == "-keyword=" &&
-        temp[9] == '\"' && temp.back() == '\"') {
-        for (int i = 10; i < temp.length() - 1; ++i) {
-            if (temp[i] == '|') {
+
+        // ISBN查询
+        if (param.substr(0, 6) == "-ISBN=") {
+            std::string isbn = param.substr(6);
+            if (!Validator::isValidISBN(isbn)) {
                 throw Error("Invalid\n");
-            }//判断 | ,此处只会有一个关键词
-            _keyword += temp[i];
-        }
-        //开头结尾
-        if (_keyword[0] == '|' || _keyword.back() == '|') {
-            throw Error("Invalid\n");
-        }
-        if (_keyword.empty() || !Validator::isValidKeyword(_keyword) || _keyword.length() > 60) {
-            throw Error("Invalid\n");
-        } else {
-            Keyword_pos.find_node(_keyword, ans);
-            if (!ans.empty()) {
-                priority_queue<Book,vector<Book>,greater<Book> > output;
-                for (int i = 0; i < ans.size(); ++i) {
-                    Book temp;
-                    BookStorage.read(temp, ans[i]);
-                    output.push(temp);
-                }
-                while (!output.empty()) {
-                    cout << output.top();
-                    output.pop();
-                }
-            } else {
-                cout << '\n';
+            }
+            std::vector<int> positions;
+            BookISBN_pos.find_node(isbn, positions);
+            if (!positions.empty()) {
+                Book book;
+                BookStorage.read(book, positions[0]);
+                results.push_back(book);
             }
         }
-    }
-    else
-    if (temp.substr(0, 6) == "-ISBN=") {
-        _isbn = temp.substr(6, temp.length() - 6);
-        if (_isbn.empty() || !Validator::isValidISBN(_isbn) || _isbn.length() > 20) {
-            throw Error("Invalid\n");
-        } else {
-            BookISBN_pos.find_node(_isbn, ans);
-            if (!ans.empty()) {
-                for (int i = 0; i < ans.size(); ++i) {
-                    Book temp;
-                    BookStorage.read(temp, ans[i]);
-                    cout << temp;
-                }
-            } else {
-                cout << '\n';
+        // 书名查询
+        else if (param.substr(0, 6) == "-name=") {
+            if (param.length() < 8 || param[6] != '\"' || param.back() != '\"') {
+                throw Error("Invalid\n");
+            }
+            std::string name = param.substr(7, param.length() - 8);
+            if (!Validator::isValidBookString(name)) {
+                throw Error("Invalid\n");
+            }
+            std::vector<int> positions;
+            BookName_pos.find_node(name, positions);
+            for (int pos : positions) {
+                Book book;
+                BookStorage.read(book, pos);
+                results.push_back(book);
             }
         }
-    }
-    else
-    if (temp.substr(0,8) == "-author=" &&
-        temp[8] == '\"' && temp.back() == '\"') {
-        _author = temp.substr(9, temp.length() - 10);
-        if (_author.empty() || !Validator::isValidBookString(_author) || _author.length() > 60) {
-            throw Error("Invalid\n");
-        } else {
-            Author_pos.find_node(_author, ans);
-            if (!ans.empty()) {
-                priority_queue<Book,vector<Book>,greater<Book> > output;
-                for (int i = 0; i < ans.size(); ++i) {
-                    Book temp;
-                    BookStorage.read(temp, ans[i]);
-                    output.push(temp);
-                }
-                while (!output.empty()) {
-                    cout << output.top();
-                    output.pop();
-                }
-            } else {
-                cout << '\n';
+        // 作者查询
+        else if (param.substr(0, 8) == "-author=") {
+            if (param.length() < 10 || param[8] != '\"' || param.back() != '\"') {
+                throw Error("Invalid\n");
+            }
+            std::string author = param.substr(9, param.length() - 10);
+            if (!Validator::isValidBookString(author)) {
+                throw Error("Invalid\n");
+            }
+            std::vector<int> positions;
+            Author_pos.find_node(author, positions);
+            for (int pos : positions) {
+                Book book;
+                BookStorage.read(book, pos);
+                results.push_back(book);
             }
         }
+        // 关键词查询
+        else if (param.substr(0, 9) == "-keyword=") {
+            if (param.length() < 11 || param[9] != '\"' || param.back() != '\"') {
+                throw Error("Invalid\n");
+            }
+            std::string keyword = param.substr(10, param.length() - 11);
+            if (!Validator::isValidKeyword(keyword) || keyword.empty()) {
+                throw Error("Invalid\n");
+            }
+            // 检查是否包含多个关键词
+            for (char c : keyword) {
+                if (c == '|') {
+                    throw Error("Invalid\n");
+                }
+            }
+            std::vector<int> positions;
+            Keyword_pos.find_node(keyword, positions);
+            for (int pos : positions) {
+                Book book;
+                BookStorage.read(book, pos);
+                results.push_back(book);
+            }
+        }
+        else {
+            throw Error("Invalid\n");
+        }
     }
-    else//否则就是不合法
-        throw Error("Invalid\n");
+
+    // 统一按ISBN排序并输出结果
+    std::sort(results.begin(), results.end());
+    if (results.empty()) {
+        std::cout << '\n';
+    } else {
+        for (const auto &book : results) {
+            std::cout << book;
+        }
+    }
 }
 
 void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -333,166 +318,168 @@ void BookManager::Select(Command &input, AccountManager &accounts, LogManager &l
     }
 }
 
-void BookManager::Modify(Command &line, AccountManager &accounts, LogManager &logs) {
-    if (accounts.getCurrentPrivilege() < 3 || line.count <= 1) {
+void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &logs) {
+    validateSelected(accounts);  // 检查权限和是否已选中图书
+
+    // 获取当前选中的图书
+    int id = accounts.loginStack.back().selectedBookId;
+    std::vector<int> positions;
+    BookID_pos.find_node(std::to_string(id), positions);
+    if (positions.empty()) {
         throw Error("Invalid\n");
     }
 
-    string temp_command = line.getNext();
-    string _name, _isbn, _author, _key_word, _price;
+    Book oldBook, newBook;
+    BookStorage.read(oldBook, positions[0]);
+    newBook = oldBook;  // 复制原书信息
 
-    //没有参数,说明没有选中书
-    if (temp_command.empty() ||
-        !accounts.loginStack.back().selectedBookId) {
-        throw Error("Invalid\n");
-    }
+    // 记录已修改的字段
+    bool modified_isbn = false;
+    bool modified_name = false;
+    bool modified_author = false;
+    bool modified_keyword = false;
+    bool modified_price = false;
 
-    int _id = accounts.loginStack.back().selectedBookId;
-    vector<int> ans;
-    BookID_pos.find_node(to_string(_id), ans);
-    Book new_book;
-    BookStorage.read(new_book, ans[0]);
-    string s,ns,os;
-    set<string> tong;
-
-
-    while (!temp_command.empty()) {
-        if (temp_command.substr(0, 6) == "-name=" &&
-            temp_command[6] == '\"' && temp_command.back() == '\"') {
-            if (_name.empty()) {
-                _name = temp_command.substr(7, temp_command.length() - 8);
-                if (_name.empty() || !Validator::isValidBookString(_name) || _name.length() > 60) {
-                    throw Error("Invalid\n");
-                }
-            }
-            else { //重复指定参数
-                throw Error("Invalid\n");
-            }
-        }
-        else
-        if (temp_command.substr(0, 9) == "-key_word=" &&
-            temp_command[9] == '\"' && temp_command.back() == '\"') {
-            //更改分隔符
-            s = temp_command.substr(10, temp_command.length() - 11);
-            if (s.empty() || !Validator::isValidBookString(s) || s.length() > 60) {
-                throw Error("Invalid\n");
-            }
-            //判断是否有连续多个|出现
-            for (int i = 1;i < s.length(); ++i) {
-                if (s[i] == '|' && s[i - 1] == '|')
-                    throw Error("Invalid\n");
-            }
-            //判断开头结尾是否有 '|'
-            if (s[0] == '|' || s.back() == '|')
-                throw Error("Invalid\n");
-
-            Command new_key(s, '|'), old_key(new_book.key_word.Keyword, '|');
-            //old是旧的key_word
-            ns = new_key.getNext(), os = old_key.getNext();
-
-            while (!ns.empty()) {
-                //判断ns中的关键词是否重复,重复则不合法
-                if (tong.find(ns) != tong.end()) {
-                    throw Error("Invalid\n");
-                }
-                tong.insert(ns);
-                ns = new_key.getNext();
-            }
-        }
-        else
-        if (temp_command.substr(0, 6) == "-ISBN=") {
-            if (_isbn.empty()) {
-                _isbn = temp_command.substr(6, temp_command.length() - 6);
-                if (_isbn.empty() || !Validator::isValidISBN(_isbn) || _isbn.length() > 20) {
-                    throw Error("Invalid\n");
-                }
-                //不能修改相同的isbn
-                if (strcmp(new_book.ISBN.ISBN, _isbn.c_str()) == 0) {
-                    throw Error("Invalid\n");
-                }
-                //不能有两本ISBN相同的书
-                vector<int> tp_ans;
-                BookISBN_pos.find_node(_isbn, tp_ans);
-                if (!tp_ans.empty()) {
-                    throw Error("Invalid\n");
-                }
-            } else {
-                throw Error("Invalid\n");
-            }
-        }
-        else
-        if (temp_command.substr(0, 8) == "-author=" &&
-            temp_command[8] == '\"' && temp_command.back() == '\"') {
-            if (_author.empty()) {
-                _author = temp_command.substr(9, temp_command.length() - 10);
-                if (_author.empty() || !Validator::isValidBookString(_author) || _author.length() > 60) {
-                    throw Error("Invalid\n");
-                }
-            } else {
-                throw Error("Invalid\n");
-            }
-        }
-        else
-        if (temp_command.substr(0, 7) == "-price=") {
-            if (_price.empty()) {
-                _price = temp_command.substr(7, temp_command.length() - 7);
-                //没有映射关系,不用修改
-                if (_price.empty()  || _price.length() > 13 || stod(_price) < 0) {
-                    throw Error("Invalid\n");
-                }
-            } else {
-                throw Error("Invalid\n");
-            }
-        }
-        else {
+    // 处理每个修改命令
+    for (int i = 0; i < input.count - 1; ++i) {
+        std::string command = input.getNext();
+        if (command.empty()) {
             throw Error("Invalid\n");
         }
 
-        temp_command = line.getNext();
+        try {
+            if (command.substr(0,6) == "-ISBN=") {
+                if (modified_isbn) throw Error("Invalid\n");
+                if (command.length() <= 7 || command[6] != '\"' || command.back() != '\"') {
+                    throw Error("Invalid\n");
+                }
+                std::string isbn = command.substr(7, command.length() - 8);
+                if (!Validator::isValidISBN(isbn)) {
+                    throw Error("Invalid\n");
+                }
+
+                // 检查新ISBN是否已存在或与原ISBN相同
+                if (strcmp(isbn.c_str(), oldBook.ISBN.ISBN) == 0) {
+                    throw Error("Invalid\n");
+                }
+                std::vector<int> check;
+                BookISBN_pos.find_node(isbn, check);
+                if (!check.empty()) {
+                    throw Error("Invalid\n");
+                }
+
+                newBook.ISBN = BookISBN(isbn);
+                modified_isbn = true;
+            }
+            else if (command.substr(0,6) == "-name=") {
+                if (modified_name) throw Error("Invalid\n");
+                if (command.length() <= 7 || command[6] != '\"' || command.back() != '\"') {
+                    throw Error("Invalid\n");
+                }
+                std::string name = command.substr(7, command.length() - 8);
+                if (!Validator::isValidBookString(name)) {
+                    throw Error("Invalid\n");
+                }
+
+                newBook.book_name = BookName(name);
+                modified_name = true;
+            }
+            else if (command.substr(0,8) == "-author=") {
+                if (modified_author) throw Error("Invalid\n");
+                if (command.length() <= 9 || command[8] != '\"' || command.back() != '\"') {
+                    throw Error("Invalid\n");
+                }
+                std::string author = command.substr(9, command.length() - 10);
+                if (!Validator::isValidBookString(author)) {
+                    throw Error("Invalid\n");
+                }
+
+                newBook.author_name = AuthorName(author);
+                modified_author = true;
+            }
+            else if (command.substr(0,9) == "-keyword=") {
+                if (modified_keyword) throw Error("Invalid\n");
+                if (command.length() <= 10 || command[9] != '\"' || command.back() != '\"') {
+                    throw Error("Invalid\n");
+                }
+                std::string keywords = command.substr(10, command.length() - 11);
+                if (!Validator::isValidKeyword(keywords)) {
+                    throw Error("Invalid\n");
+                }
+
+                newBook.key_word = KeyWord(keywords);
+                modified_keyword = true;
+            }
+            else if (command.substr(0,7) == "-price=") {
+                if (modified_price) throw Error("Invalid\n");
+
+                std::string price_str = command.substr(7);
+                if (!Validator::isValidPrice(price_str)) {
+                    throw Error("Invalid\n");
+                }
+
+                try {
+                    double price = std::stod(price_str);
+                    if (price < 0) throw Error("Invalid\n");
+                    newBook.Price = price;
+                    modified_price = true;
+                } catch (...) {
+                    throw Error("Invalid\n");
+                }
+            }
+            else {
+                throw Error("Invalid\n");
+            }
+        }
+        catch (...) {
+            throw Error("Invalid\n");
+        }
     }
 
-    if (!Validator::isValidISBN(_isbn) || _isbn.length() > 20 ||
-        !Validator::isValidBookString(_name) || _name.length() > 60 ||
-        !Validator::isValidBookString(_author) || _author.length() > 60 ||
-        !Validator::isValidBookString(_key_word) || _key_word.length() > 60 ||
-        _price.length() > 13 ) {
-        throw Error("Invalid\n");
-    }
-    //合法，则更新数据
-    if (!_name.empty()) {
-        BookName_pos.delete_node(DataNode(new_book.book_name.Bookname, ans[0]));
-        BookName_pos.insert_node(DataNode(_name, ans[0]));
-        strcpy(new_book.book_name.Bookname, _name.c_str());
-    }
-    if (!_author.empty()) {
-        Author_pos.delete_node(DataNode(new_book.author_name.Author, ans[0]));
-        Author_pos.insert_node(DataNode(_author, ans[0]));
-        strcpy(new_book.author_name.Author, _author.c_str());
-    }
-    if (!_isbn.empty()) {
-        BookISBN_pos.delete_node(DataNode(new_book.ISBN.ISBN, ans[0]));
-        BookISBN_pos.insert_node(DataNode(_isbn, ans[0]));
-        strcpy(new_book.ISBN.ISBN, _isbn.c_str());
-    }
-    if (!_price.empty()) {
-        new_book.Price = stod(_price);
-    }
+    // 如果有修改，更新图书信息和索引
+    if (modified_isbn || modified_name || modified_author ||
+        modified_keyword || modified_price) {
+        // 更新索引
+        if (modified_isbn) {
+            BookISBN_pos.delete_node(DataNode(oldBook.ISBN.ISBN, positions[0]));
+            BookISBN_pos.insert_node(DataNode(newBook.ISBN.ISBN, positions[0]));
+        }
+        if (modified_name) {
+            BookName_pos.delete_node(DataNode(oldBook.book_name.Bookname, positions[0]));
+            BookName_pos.insert_node(DataNode(newBook.book_name.Bookname, positions[0]));
+        }
+        if (modified_author) {
+            Author_pos.delete_node(DataNode(oldBook.author_name.Author, positions[0]));
+            Author_pos.insert_node(DataNode(newBook.author_name.Author, positions[0]));
+        }
+        if (modified_keyword) {
+            // 删除旧关键词
+            std::string old_keywords(oldBook.key_word.Keyword);
+            std::istringstream old_ss(old_keywords);
+            std::string old_keyword;
+            while (std::getline(old_ss, old_keyword, '|')) {
+                Keyword_pos.delete_node(DataNode(old_keyword, positions[0]));
+            }
 
-    if (!tong.empty()) {
-        Command new_key(s, '|'), old_key(new_book.key_word.Keyword, '|');
-        ns = new_key.getNext(), os = old_key.getNext();
-        //暴力删除,之后重新插入
-        while (!os.empty()) {
-            Keyword_pos.delete_node(DataNode(os, ans[0]));
-            os = old_key.getNext();
+            // 添加新关键词
+            std::string new_keywords(newBook.key_word.Keyword);
+            std::istringstream new_ss(new_keywords);
+            std::string new_keyword;
+            while (std::getline(new_ss, new_keyword, '|')) {
+                Keyword_pos.insert_node(DataNode(new_keyword, positions[0]));
+            }
         }
-        while (!ns.empty()) {
-            Keyword_pos.insert_node(DataNode(ns, ans[0]));
-            ns = new_key.getNext();
-        }
-        strcpy(new_book.key_word.Keyword, s.c_str());
+
+        // 更新图书信息
+        BookStorage.update(newBook, positions[0]);
+
+        // 添加日志
+        Log modifyLog;
+        modifyLog.behavoir = ActionType::MODIFYBOOK;
+        modifyLog.use = &accounts.loginStack.back().account;
+        modifyLog.Amount = 0;
+        logs.AddLog(modifyLog);
     }
-        BookStorage.update(new_book, ans[0]);
 }
 
 void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -535,7 +522,7 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     // 添加日志
     Log importLog;
     importLog.behavoir = ActionType::IMPORTBOOK;
-    importLog.use = nullptr;
+    importLog.use = nullptr;  // 避免使用悬挂指针
     importLog.isIncome = false;
     importLog.Amount = total_cost;
     snprintf(importLog.description, sizeof(importLog.description),
