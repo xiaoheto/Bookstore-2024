@@ -105,6 +105,12 @@ int main() {
        catch(Error &message) {
            std::cout << message.what();
        }
+       catch (std::invalid_argument &x) {
+           std::cout << "Invalid\n";
+       }
+       catch(...) {
+           std::cout << "Invalid\n";
+       }
    }
    return 0;
 }

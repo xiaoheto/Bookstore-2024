@@ -7,19 +7,25 @@
 
 namespace Validator {
     // 用户ID和密码验证（数字、字母、下划线，最大30字符）
-    inline bool isValidUserID(const std::string &str) {
-        if (str.empty() || str.length() > 30) return false;
-        return std::all_of(str.begin(), str.end(), [](char c) {
-            return isalnum(c) || c == '_';
-        });
+    inline bool isValidUserID(const std::string &x) {
+        if (x.empty()) return true;
+        for (int i = 0;i < x.length(); ++i) {
+            if (x[i] != '_' && !(x[i] >= '0' && x[i] <= '9') && !(x[i] >= 'a' && x[i] <= 'z') && !(x[i] >= 'A' && x[i] <= 'Z') ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // 用户名验证（除不可见字符外的ASCII字符，最大30字符）
-    inline bool isValidUsername(const std::string &str) {
-        if (str.length() > 30) return false;  // 删除对空字符串的检查
-        return str.empty() || std::all_of(str.begin(), str.end(), [](char c) {
-            return c >= 32 && c <= 126;
-        });
+    inline bool isValidUsername(const std::string &x) {
+        if (x.empty()) return true;
+        for (int i = 0;i < x.length(); ++i) {
+            if (x[i] < 32 || x[i] > 126) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // ISBN验证（除不可见字符外的ASCII字符，最大20字符）
