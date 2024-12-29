@@ -293,9 +293,6 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
 }
 
 void BookManager::Select(Command &input, AccountManager &accounts, LogManager &logs) {
-    if (accounts.loginStack.empty()) {
-        throw Error("Invalid\n");
-    }
     if (accounts.getCurrentPrivilege() < 3 || input.count != 2) {
         throw Error("Invalid\n");
     }
