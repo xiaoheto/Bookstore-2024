@@ -162,12 +162,11 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
             }
             std::vector<int> positions;
             BookISBN_pos.find_node(isbn, positions);
-            if (positions.empty()) {
-                throw Error("Invalid\n");
+            if (!positions.empty()) {
+                Book book;
+                BookStorage.read(book, positions[0]);
+                results.push_back(book);
             }
-            Book book;
-            BookStorage.read(book, positions[0]);
-            results.push_back(book);
         }
         // 书名查询
         else if (param.substr(0, 6) == "-name=") {
@@ -245,7 +244,6 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
         }
     }
 }
-
 
 void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs) {
     if (input.count != 3) {
