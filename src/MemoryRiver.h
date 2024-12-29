@@ -1,7 +1,3 @@
-//
-// Created by Leonard C on 2021/12/12.
-//
-
 #ifndef BOOKSTORE_FILE_IO_H
 #define BOOKSTORE_FILE_IO_H
 
