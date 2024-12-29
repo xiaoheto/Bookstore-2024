@@ -70,15 +70,36 @@ bool KeyWord::operator==(const KeyWord &other) const {
 Book::Book(int id, const std::string &isbn, const std::string &bookName,
            const std::string &authorName, const std::string &keyWord,
            double price, int quantity, double totalcost)
-    : book_id(id), ISBN(isbn), book_name(bookName),
-      author_name(authorName), key_word(keyWord),
-      Price(price), Quantity(quantity), TotalCost(totalcost) {}
+    : book_id(id), ISBN(isbn), Price(price), Quantity(quantity), TotalCost(totalcost) {
+
+    // 初始化所有字符数组为空字符串
+    memset(book_name.Bookname, 0, sizeof(book_name.Bookname));
+    memset(author_name.Author, 0, sizeof(author_name.Author));
+    memset(key_word.Keyword, 0, sizeof(key_word.Keyword));
+
+    // 如果提供了相应的字符串，则复制到对应的字段
+    if (!bookName.empty()) {
+        strncpy(book_name.Bookname, bookName.c_str(), 60);
+        book_name.Bookname[60] = '\0';
+    }
+
+    if (!authorName.empty()) {
+        strncpy(author_name.Author, authorName.c_str(), 60);
+        author_name.Author[60] = '\0';
+    }
+
+    if (!keyWord.empty()) {
+        strncpy(key_word.Keyword, keyWord.c_str(), 60);
+        key_word.Keyword[60] = '\0';
+    }
+}
 
 Book::Book(int id, const std::string &isbn)
     : book_id(id), ISBN(isbn), Price(0), Quantity(0), TotalCost(0) {
-    book_name.Bookname[0] = '\0';
-    author_name.Author[0] = '\0';
-    key_word.Keyword[0] = '\0';
+    // 初始化所有字符数组为空字符串
+    memset(book_name.Bookname, 0, sizeof(book_name.Bookname));
+    memset(author_name.Author, 0, sizeof(author_name.Author));
+    memset(key_word.Keyword, 0, sizeof(key_word.Keyword));
 }
 
 bool Book::operator<(const Book &rhs) const {
@@ -98,12 +119,35 @@ bool Book::operator>=(const Book &rhs) const {
 }
 
 std::ostream &operator<<(std::ostream &out, const Book &book) {
-    out << book.ISBN.ISBN << '\t'
-        << book.book_name.Bookname << '\t'
-        << book.author_name.Author << '\t'
-        << book.key_word.Keyword << '\t'
-        << std::fixed << std::setprecision(2) << book.Price << '\t'
-        << book.Quantity << '\n';
+    // 使用stringstream来格式化输出，避免空值问题
+    std::stringstream ss;
+
+    // ISBN
+    ss << book.ISBN.ISBN << '\t';
+
+    // 书名 - 确保即使为空也输出制表符
+    if (book.book_name.Bookname[0] != '\0') {
+        ss << book.book_name.Bookname;
+    }
+    ss << '\t';
+
+    // 作者 - 确保即使为空也输出制表符
+    if (book.author_name.Author[0] != '\0') {
+        ss << book.author_name.Author;
+    }
+    ss << '\t';
+
+    // 关键词 - 确保即使为空也输出制表符
+    if (book.key_word.Keyword[0] != '\0') {
+        ss << book.key_word.Keyword;
+    }
+    ss << '\t';
+
+    // 价格和数量总是输出
+    ss << std::fixed << std::setprecision(2) << book.Price << '\t'
+       << book.Quantity;
+
+    out << ss.str() << '\n';
     return out;
 }
 
@@ -211,12 +255,6 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
             if (!Validator::isValidKeyword(keyword) || keyword.empty()) {
                 throw Error("Invalid\n");
             }
-            // 检查是否包含多个关键词
-            for (char c : keyword) {
-                if (c == '|') {
-                    throw Error("Invalid\n");
-                }
-            }
             std::vector<int> positions;
             Keyword_pos.find_node(keyword, positions);
             for (int pos : positions) {
@@ -230,14 +268,16 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
         }
     }
 
-    // 统一按ISBN排序并输出结果
-    std::sort(results.begin(), results.end());
+    // 在所有情况下都输出一个空行
     if (results.empty()) {
         std::cout << '\n';
-    } else {
-        for (const auto &book : results) {
-            std::cout << book;
-        }
+        return;
+    }
+
+    // 有结果时，按ISBN排序并输出
+    std::sort(results.begin(), results.end());
+    for (const auto &book : results) {
+        std::cout << book << '\n';
     }
 }
 
@@ -299,6 +339,7 @@ void BookManager::Select(Command &input, AccountManager &accounts, LogManager &l
     BookISBN_pos.find_node(isbn, positions);
 
     if (positions.empty()) {
+        // 创建新书
         BookStorage.get_info(bookCount, 1);
         bookCount++;
         Book newBook(bookCount, isbn);
@@ -312,6 +353,7 @@ void BookManager::Select(Command &input, AccountManager &accounts, LogManager &l
 
         accounts.selectBook(bookCount);
     } else {
+        // 选择现有的书
         Book book;
         BookStorage.read(book, positions[0]);
         accounts.selectBook(book.book_id);
@@ -319,7 +361,7 @@ void BookManager::Select(Command &input, AccountManager &accounts, LogManager &l
 }
 
 void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &logs) {
-    validateSelected(accounts);  // 检查权限和是否已选中图书
+    validateSelected(accounts);  // 检查权限和图书是否已选中
 
     // 获取当前选中的图书
     int id = accounts.loginStack.back().selectedBookId;
@@ -340,6 +382,11 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
     bool modified_keyword = false;
     bool modified_price = false;
 
+    // 至少要有一个修改参数
+    if (input.count < 2) {
+        throw Error("Invalid\n");
+    }
+
     // 处理每个修改命令
     for (int i = 0; i < input.count - 1; ++i) {
         std::string command = input.getNext();
@@ -348,6 +395,7 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
         }
 
         try {
+            // 修改 ISBN
             if (command.substr(0,6) == "-ISBN=") {
                 if (modified_isbn) throw Error("Invalid\n");
                 if (command.length() <= 7 || command[6] != '\"' || command.back() != '\"') {
@@ -357,20 +405,34 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
                 if (!Validator::isValidISBN(isbn)) {
                     throw Error("Invalid\n");
                 }
+                // 清理所有与旧ISBN相关的索引
+                std::string oldIsbn(oldBook.ISBN.ISBN);
+                // 先删除所有与旧书相关的索引
+                BookISBN_pos.delete_node(DataNode(oldIsbn, positions[0]));
+                BookName_pos.delete_node(DataNode(oldBook.book_name.Bookname, positions[0]));
+                Author_pos.delete_node(DataNode(oldBook.author_name.Author, positions[0]));
 
-                // 检查新ISBN是否已存在或与原ISBN相同
-                if (strcmp(isbn.c_str(), oldBook.ISBN.ISBN) == 0) {
-                    throw Error("Invalid\n");
-                }
-                std::vector<int> check;
-                BookISBN_pos.find_node(isbn, check);
-                if (!check.empty()) {
-                    throw Error("Invalid\n");
+                // 处理关键词
+                if (oldBook.key_word.Keyword[0] != '\0') {
+                    std::istringstream iss(oldBook.key_word.Keyword);
+                    std::string keyword;
+                    while (std::getline(iss, keyword, '|')) {
+                        Keyword_pos.delete_node(DataNode(keyword, positions[0]));
+                    }
                 }
 
-                newBook.ISBN = BookISBN(isbn);
+                // 创建新的书籍记录
+                newBook = Book(oldBook.book_id, isbn);
+
+                // 添加新的ISBN索引
+                BookISBN_pos.insert_node(DataNode(isbn, positions[0]));
+
                 modified_isbn = true;
+
+                // 立即更新存储
+                BookStorage.update(newBook, positions[0]);
             }
+            // 修改书名
             else if (command.substr(0,6) == "-name=") {
                 if (modified_name) throw Error("Invalid\n");
                 if (command.length() <= 7 || command[6] != '\"' || command.back() != '\"') {
@@ -381,9 +443,18 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
                     throw Error("Invalid\n");
                 }
 
+                // 更新书名
+                std::string oldName(oldBook.book_name.Bookname);
                 newBook.book_name = BookName(name);
                 modified_name = true;
+
+                // 更新书名索引
+                if (oldName[0] != '\0') { // 如果原来有书名
+                    BookName_pos.delete_node(DataNode(oldName, positions[0]));
+                }
+                BookName_pos.insert_node(DataNode(name, positions[0]));
             }
+            // 修改作者
             else if (command.substr(0,8) == "-author=") {
                 if (modified_author) throw Error("Invalid\n");
                 if (command.length() <= 9 || command[8] != '\"' || command.back() != '\"') {
@@ -394,9 +465,18 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
                     throw Error("Invalid\n");
                 }
 
+                // 更新作者
+                std::string oldAuthor(oldBook.author_name.Author);
                 newBook.author_name = AuthorName(author);
                 modified_author = true;
+
+                // 更新作者索引
+                if (oldAuthor[0] != '\0') { // 如果原来有作者
+                    Author_pos.delete_node(DataNode(oldAuthor, positions[0]));
+                }
+                Author_pos.insert_node(DataNode(author, positions[0]));
             }
+            // 修改关键词
             else if (command.substr(0,9) == "-keyword=") {
                 if (modified_keyword) throw Error("Invalid\n");
                 if (command.length() <= 10 || command[9] != '\"' || command.back() != '\"') {
@@ -407,9 +487,28 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
                     throw Error("Invalid\n");
                 }
 
+                // 更新关键词
+                std::string oldKeywords(oldBook.key_word.Keyword);
                 newBook.key_word = KeyWord(keywords);
                 modified_keyword = true;
+
+                // 删除旧关键词索引
+                if (oldKeywords[0] != '\0') {
+                    std::istringstream old_ss(oldKeywords);
+                    std::string old_keyword;
+                    while (std::getline(old_ss, old_keyword, '|')) {
+                        Keyword_pos.delete_node(DataNode(old_keyword, positions[0]));
+                    }
+                }
+
+                // 添加新关键词索引
+                std::istringstream new_ss(keywords);
+                std::string new_keyword;
+                while (std::getline(new_ss, new_keyword, '|')) {
+                    Keyword_pos.insert_node(DataNode(new_keyword, positions[0]));
+                }
             }
+            // 修改价格
             else if (command.substr(0,7) == "-price=") {
                 if (modified_price) throw Error("Invalid\n");
 
@@ -430,50 +529,17 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
             else {
                 throw Error("Invalid\n");
             }
+
+            // 每次修改后立即更新存储
+            BookStorage.update(newBook, positions[0]);
         }
         catch (...) {
             throw Error("Invalid\n");
         }
     }
 
-    // 如果有修改，更新图书信息和索引
-    if (modified_isbn || modified_name || modified_author ||
-        modified_keyword || modified_price) {
-        // 更新索引
-        if (modified_isbn) {
-            BookISBN_pos.delete_node(DataNode(oldBook.ISBN.ISBN, positions[0]));
-            BookISBN_pos.insert_node(DataNode(newBook.ISBN.ISBN, positions[0]));
-        }
-        if (modified_name) {
-            BookName_pos.delete_node(DataNode(oldBook.book_name.Bookname, positions[0]));
-            BookName_pos.insert_node(DataNode(newBook.book_name.Bookname, positions[0]));
-        }
-        if (modified_author) {
-            Author_pos.delete_node(DataNode(oldBook.author_name.Author, positions[0]));
-            Author_pos.insert_node(DataNode(newBook.author_name.Author, positions[0]));
-        }
-        if (modified_keyword) {
-            // 删除旧关键词
-            std::string old_keywords(oldBook.key_word.Keyword);
-            std::istringstream old_ss(old_keywords);
-            std::string old_keyword;
-            while (std::getline(old_ss, old_keyword, '|')) {
-                Keyword_pos.delete_node(DataNode(old_keyword, positions[0]));
-            }
-
-            // 添加新关键词
-            std::string new_keywords(newBook.key_word.Keyword);
-            std::istringstream new_ss(new_keywords);
-            std::string new_keyword;
-            while (std::getline(new_ss, new_keyword, '|')) {
-                Keyword_pos.insert_node(DataNode(new_keyword, positions[0]));
-            }
-        }
-
-        // 更新图书信息
-        BookStorage.update(newBook, positions[0]);
-
-        // 添加日志
+    // 如果有任何修改，添加日志
+    if (modified_isbn || modified_name || modified_author || modified_keyword || modified_price) {
         Log modifyLog;
         modifyLog.behavoir = ActionType::MODIFYBOOK;
         modifyLog.use = &accounts.loginStack.back().account;
