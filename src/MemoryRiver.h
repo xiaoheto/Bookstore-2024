@@ -51,7 +51,6 @@ public:
         file.seekp((n - 1) * sizeof(int));
         file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
         file.close();
-        return;
     }
 
     //在文件合适位置写入类对象t，并返回写入的位置索引index

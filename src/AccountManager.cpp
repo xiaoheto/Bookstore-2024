@@ -56,14 +56,12 @@ AccountManager::AccountManager(const string &file_name) {
 
 }
 
-void AccountManager::logIn(Command &line) {
-
-
-    if (line.count < 2 || line.count > 3) {
+void AccountManager::logIn(Command &input) {
+    if (input.count < 2 || input.count > 3) {
         throw Error("Invalid\n");
     }
 
-    string UseerId = line.getNext();
+    string UseerId = input.getNext();
     if (!Validator::isValidUserID(UseerId) || UseerId.length() > 30) {
         throw Error("Invalid\n");
     }
@@ -77,11 +75,10 @@ void AccountManager::logIn(Command &line) {
     Account temp;
     accountStorage.read(temp, ans[0]);
 
-    string s = line.getNext();
+    string s = input.getNext();
     if (!s.empty() && (!Validator::isValidUserID(s) || s.length() > 30) ) {
         throw Error("Invalid\n");
     }
-    //todo:判断顺序要调整，先看密码的正确性
     if (!s.empty()) {
         if (strcmp(s.c_str(), temp.password) != 0) {
             throw Error("Invalid\n");
@@ -91,38 +88,39 @@ void AccountManager::logIn(Command &line) {
             loginStack.push_back(tp);
             return;
         }
-    } else {
-        //todo:密码为空，判断权限
+    }
+    else {
         if (cur_priority >= temp.getPrivilege()) {
             LogInAccount tp;
             tp.account = temp;
             loginStack.push_back(tp);
             return;
-        } else {
+        }
+        else {
             throw Error("Invalid\n");
         }
     }
 }
 
-void AccountManager::logOut(Command &line) {
-    if (line.count != 1 || loginStack.empty()) {
+void AccountManager::logOut(Command &input) {
+    if (input.count != 1 || loginStack.empty()) {
         throw Error("Invalid\n");
-    }    //没有登录账户,异常
+    }
 
     loginStack.pop_back();
 }
 
-void AccountManager::registerUser(Command &line) {
-    string _UseerId = line.getNext();
-    string _password = line.getNext();
-    string _name = line.getNext();
+void AccountManager::registerUser(Command &input) {
+    string _UseerId = input.getNext();
+    string _password = input.getNext();
+    string _name = input.getNext();
 
     if (!Validator::isValidUserID(_UseerId) || !Validator::isValidUserID(_password) || !Validator::isValidUsername(_name) ||
         _UseerId.length() > 30 || _password.length() > 30 || _name.length() > 30) {
         throw Error("Invalid\n");
     }
 
-    if (line.count != 4) {
+    if (input.count != 4) {
         throw Error("Invalid\n");
     }
 
@@ -137,11 +135,11 @@ void AccountManager::registerUser(Command &line) {
     userId_pos.insert_node(DataNode(_UseerId, pos));
 }
 
-void AccountManager::addUser(Command &line, LogManager &logs) {
-    string _UseerId = line.getNext();
-    string _password = line.getNext();
-    string _priority = line.getNext();
-    string _name = line.getNext();
+void AccountManager::addUser(Command &input, LogManager &logs) {
+    string _UseerId = input.getNext();
+    string _password = input.getNext();
+    string _priority = input.getNext();
+    string _name = input.getNext();
 
     if (!Validator::isValidUserID(_UseerId) || !Validator::isValidUserID(_password) || !Validator::isValidUsername(_name) ||
         _priority[0] < '0' || _priority[0] > '7' || _priority.length() != 1 ||
@@ -149,7 +147,7 @@ void AccountManager::addUser(Command &line, LogManager &logs) {
         throw Error("Invalid\n");
     }
 
-    if (line.count != 5) {
+    if (input.count != 5) {
         throw Error("Invalid\n");
     }
 
@@ -169,17 +167,17 @@ void AccountManager::addUser(Command &line, LogManager &logs) {
     userId_pos.insert_node(DataNode(_UseerId, pos));
 }
 
-void AccountManager::changePassword(Command &line) {
-    string UseerId = line.getNext();
-    string old_password = line.getNext();
-    string new_password = line.getNext();
+void AccountManager::changePassword(Command &input) {
+    string UseerId = input.getNext();
+    string old_password = input.getNext();
+    string new_password = input.getNext();
 
     if (!Validator::isValidUserID(UseerId) || !Validator::isValidUserID(old_password) || !Validator::isValidUserID(new_password) ||
         UseerId.length() > 30 || old_password.length() > 30 || new_password.length() > 30) {
         throw Error("Invalid\n");
     }
 
-    if (line.count < 3 || line.count > 4) {
+    if (input.count < 3 || input.count > 4) {
         throw Error("Invalid\n");
     }
 
@@ -217,13 +215,13 @@ int AccountManager::getCurrentPrivilege() const{
     return loginStack.back().account.privilege;
 }
 
-void AccountManager::deleteUser(Command &line, LogManager &logs) {
-    if (line.count != 2 || getCurrentPrivilege() < 7) {
+void AccountManager::deleteUser(Command &input, LogManager &logs) {
+    if (input.count != 2 || getCurrentPrivilege() < 7) {
 
         throw Error("Invalid\n");
     }
 
-    string UseerId = line.getNext();
+    string UseerId = input.getNext();
     if (!Validator::isValidUserID(UseerId) || UseerId.length() > 30) {
         throw Error("Invalid\n");
     }
