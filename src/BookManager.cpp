@@ -147,7 +147,14 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
                 results.push_back(book);
             }
         }
-    } else {
+    }
+    else {
+        // 验证参数格式
+        if (param.length() < 6) {
+            throw Error("Invalid\n");
+        }
+
+        // ISBN查询
         if (param.substr(0, 6) == "-ISBN=") {
             std::string isbn = param.substr(6);
             if (!Validator::isValidISBN(isbn)) {
@@ -160,7 +167,9 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
                 BookStorage.read(book, positions[0]);
                 results.push_back(book);
             }
-        } else if (param.substr(0, 6) == "-name=") {
+        }
+        // 书名查询
+        else if (param.substr(0, 6) == "-name=") {
             if (param.length() < 8 || param[6] != '\"' || param.back() != '\"') {
                 throw Error("Invalid\n");
             }
@@ -176,10 +185,52 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
                 results.push_back(book);
             }
         }
-        // ... 其他查询条件类似
+        // 作者查询
+        else if (param.substr(0, 8) == "-author=") {
+            if (param.length() < 10 || param[8] != '\"' || param.back() != '\"') {
+                throw Error("Invalid\n");
+            }
+            std::string author = param.substr(9, param.length() - 10);
+            if (!Validator::isValidBookString(author)) {
+                throw Error("Invalid\n");
+            }
+            std::vector<int> positions;
+            Author_pos.find_node(author, positions);
+            for (int pos : positions) {
+                Book book;
+                BookStorage.read(book, pos);
+                results.push_back(book);
+            }
+        }
+        // 关键词查询
+        else if (param.substr(0, 9) == "-keyword=") {
+            if (param.length() < 11 || param[9] != '\"' || param.back() != '\"') {
+                throw Error("Invalid\n");
+            }
+            std::string keyword = param.substr(10, param.length() - 11);
+            if (!Validator::isValidKeyword(keyword) || keyword.empty()) {
+                throw Error("Invalid\n");
+            }
+            // 检查是否包含多个关键词
+            for (char c : keyword) {
+                if (c == '|') {
+                    throw Error("Invalid\n");
+                }
+            }
+            std::vector<int> positions;
+            Keyword_pos.find_node(keyword, positions);
+            for (int pos : positions) {
+                Book book;
+                BookStorage.read(book, pos);
+                results.push_back(book);
+            }
+        }
+        else {
+            throw Error("Invalid\n");
+        }
     }
 
-    // 按ISBN排序并输出
+    // 统一按ISBN排序并输出结果
     std::sort(results.begin(), results.end());
     if (results.empty()) {
         std::cout << '\n';
