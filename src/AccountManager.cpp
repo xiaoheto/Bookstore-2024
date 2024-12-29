@@ -1,321 +1,288 @@
 #include "AccountManager.h"
-#include "validator.h"
 
-AccountId::AccountId(std::string user_id) {
-    if (!Validator::isValidUserID(user_id)) {
-        throw Error("Invalid\n");
+//判断是否是下划线,数字,字母
+bool is_valid(const string &x) {
+    if (x.empty()) return true; //不对空串做判断
+    for (int i = 0;i < x.length(); ++i) {
+        //不是可见字符
+        if (x[i] != '_' && !(x[i] >= '0' && x[i] <= '9') &&
+            !(x[i] >= 'a' && x[i] <= 'z') && !(x[i] >= 'A' && x[i] <= 'Z') ) {
+            return false;
+        }
     }
-    strcpy(UserId, user_id.c_str());
+    return true;
+}
+
+//是否是可见字符
+bool is_visible(const string &x) {
+    if (x.empty()) return true; //不对空串做判断
+    for (int i = 0;i < x.length(); ++i) {
+        if (x[i] < 32 || x[i] > 126) {
+            return false;
+        }
+    }
+    return true;
+}
+
+//class AccountId
+
+AccountId::AccountId(std::string AccountUseerId) {
+    strcpy(UserId, AccountUseerId.c_str());
 }
 
 std::string AccountId::getUserId() const {
-    return std::string(UserId);
+    return UserId;
 }
 
-bool AccountId::operator<(const AccountId &other) const {
-    return strcmp(UserId, other.UserId) < 0;
+bool AccountId::operator==(const AccountId &rhs) const {
+    if (strcmp(UserId, rhs.UserId) == 0) return true;
+    else return false;
 }
 
-bool AccountId::operator==(const AccountId &other) const {
-    return strcmp(UserId, other.UserId) == 0;
+bool AccountId::operator<(const AccountId &rhs) const {
+    if (strcmp(UserId, rhs.UserId) < 0) return true;
+    else return false;
 }
 
-Account::Account(const std::string &user_id, const std::string &user_name,
-                const std::string &password_, int privilege_) {
-    // 验证所有输入
-    if (!Validator::isValidUserID(user_id) ||
-        !Validator::isValidUsername(user_name) ||
-        !Validator::isValidUserID(password_) ||
-        (privilege_ != 0 && privilege_ != 1 && privilege_ != 3 && privilege_ != 7)) {
-        throw Error("Invalid\n");
-    }
+Account::Account(const std::string &_UseerId, const std::string &_name, const std::string &_password, int _priority) {
+    strcpy(UserId.UserId, _UseerId.c_str());
+    strcpy(UserName, _name.c_str());
+    strcpy(password, _password.c_str());
+    privilege = _priority;
+}
 
-    UserId = AccountId(user_id);
-    strncpy(UserName, user_name.c_str(), 30);
-    UserName[30] = '\0';
-    strncpy(password, password_.c_str(), 30);
-    password[30] = '\0';
-    privilege = privilege_;
+void Account::changePassword(const std::string &newPassword) {
+    strcpy(password, newPassword.c_str());
 }
 
 int Account::getPrivilege() {
     return privilege;
 }
 
-void Account::changePassword(const std::string &newPassword) {
-    if (!Validator::isValidUserID(newPassword)) {
-        throw Error("Invalid\n");
-    }
-    strncpy(password, newPassword.c_str(), 30);
-    password[30] = '\0';
-}
+//class AccountManegement
 
 AccountManager::AccountManager() {
-    accountStorage.initialise("account_data");
-    userId_pos.init("account_to_pos");
+    accountStorage.initialise("accountStorage");//MemoryRiver
+    userId_pos.init("userId_pos");//ull
+
     account_count = 0;
-
+    //加入root账户,注意判断是否已经存在root,防止重复加入
+    //root是UseerId
+    Account root("root", "", "sjtu", 7);
     accountStorage.get_info(account_count, 1);
-    if (account_count == 0) {
-        // 创建 root 账户
-        Account root("root", "", "sjtu", 7);
-        int pos = accountStorage.write(root);
-        if (pos <= 0) throw Error("Invalid\n");
+    if (account_count) return; //已经存在
+    int pos = accountStorage.write(root);
 
-        account_count = 1;
-        accountStorage.write_info(account_count, 1);
-        userId_pos.insert_node(DataNode("root",pos));
-
-        if (!userId_pos.insert_node(DataNode("root", pos))) {
-            throw Error("Invalid\n");
-        }
-    }
+    userId_pos.insert_node(DataNode(root.UserId.UserId, pos));
 }
 
-void AccountManager::logIn(Command &input) {
-    if (input.count != 2 && input.count != 3) {
+AccountManager::AccountManager(const string &file_name) {
+    accountStorage.initialise("accountStorage");
+    userId_pos.init(file_name);
+
+}
+
+void AccountManager::logIn(Command &line) {
+    //登录的时候,不仅要查找是否注册过,
+    //还要在登录栈中查找是否已经登录过?
+    //似乎可以重复登录同一账户?
+
+    //判断有无多余的参数
+    if (line.count < 2 || line.count > 3) {
         throw Error("Invalid\n");
     }
 
-    std::string user_id = input.getNext();
-    //std::cout << user_id << '\n';
-    if (!Validator::isValidUserID(user_id)) {
+    string UseerId = line.getNext();
+    if (!is_valid(UseerId) || UseerId.length() > 30) {
         throw Error("Invalid\n");
     }
-    //std::cout << user_id << '\n';
-
-    std::vector<int> ans;
-    userId_pos.find_node(user_id, ans);
-    //std::cout << user_id << '\n';
+    vector<int> ans;
+    userId_pos.find_node(UseerId, ans);
     if (ans.empty()) {
-        std::cout << "empty";
         throw Error("Invalid\n");
-    }
+    }//没注册过,失败
 
+    int cur_priority = getCurrentPrivilege();
     Account temp;
     accountStorage.read(temp, ans[0]);
-    std::string password = input.getNext();
-    //std::cout << password << '\n';
-    int currentPrivilege = getCurrentPrivilege();
 
-    if (!password.empty()) {
-        // 提供了密码的情况
-        if (!Validator::isValidUserID(password) ||
-            strcmp(password.c_str(), temp.password) != 0) {
+    string s = line.getNext();
+    if (!s.empty() && (!is_valid(s) || s.length() > 30) ) {
+        throw Error("Invalid\n");
+    }
+    //todo:判断顺序要调整，先看密码的正确性
+    if (!s.empty()) {
+        if (strcmp(s.c_str(), temp.password) != 0) {
+            //异常判断:密码错误
+            throw Error("Invalid\n");
+        } else {//正确,登录成功
+            LogInAccount tp;
+            tp.account = temp;
+            loginStack.push_back(tp);
+            return;
+        }
+    } else {
+        //todo:密码为空，判断权限
+        if (cur_priority >= temp.getPrivilege()) {
+            LogInAccount tp;
+            tp.account = temp;
+            loginStack.push_back(tp);
+            return;
+        } else {
             throw Error("Invalid\n");
         }
-    } else if (currentPrivilege < temp.privilege) {
-        // 没提供密码且权限不足
-        throw Error("Invalid\n");
     }
-
-    loginStack.push_back(LogInAccount(temp));
 }
 
-void AccountManager::logOut(Command &input) {
-    if (input.count != 1 || loginStack.empty()) {
+void AccountManager::logOut(Command &line) {
+    if (line.count != 1 || loginStack.empty()) {
         throw Error("Invalid\n");
-    }
+    }    //没有登录账户,异常
 
-    // 清除选中的图书
-    loginStack.back().selectedBookId = 0;
     loginStack.pop_back();
 }
 
-void AccountManager::registerUser(Command &input) {
-    if (input.count != 4) {
+void AccountManager::registerUser(Command &line) {
+    string _UseerId = line.getNext();
+    string _password = line.getNext();
+    string _name = line.getNext();
+
+    //提前判断合法性
+    if (!is_valid(_UseerId) || !is_valid(_password) || !is_visible(_name) ||
+        _UseerId.length() > 30 || _password.length() > 30 || _name.length() > 30) {
         throw Error("Invalid\n");
     }
 
-    std::string user_id = input.getNext();
-    std::string password = input.getNext();
-    std::string user_name = input.getNext();
-
-    if (!Validator::isValidUserID(user_id) ||
-        !Validator::isValidUserID(password) ||
-        !Validator::isValidUsername(user_name)) {
+    //不能缺省参数
+    if (line.count != 4) {
         throw Error("Invalid\n");
     }
 
-    std::vector<int> ans;
-    userId_pos.find_node(user_id, ans);
+    vector<int> ans;
+    userId_pos.find_node(_UseerId, ans);
     if (!ans.empty()) {
         throw Error("Invalid\n");
-    }
+    } //重复,失败
 
-    accountStorage.get_info(account_count, 1);
-    Account temp(user_id, user_name, password, 1);
+    Account temp(_UseerId, _name, _password, 1);
+    //只能注册权限为1的顾客账户
     int pos = accountStorage.write(temp);
-    if (pos <= 0) throw Error("Invalid\n");
-
-    account_count++;
-    accountStorage.write_info(account_count, 1);
-
-    if (!userId_pos.insert_node(DataNode(user_id, pos))) {
-        throw Error("Invalid\n");
-    }
+    userId_pos.insert_node(DataNode(_UseerId, pos));
 }
 
-void AccountManager::changePassword(Command &input) {
-    if (input.count != 3 && input.count != 4) {
+void AccountManager::addUser(Command &line, LogManager &logs) {
+    string _UseerId = line.getNext();
+    string _password = line.getNext();
+    string _priority = line.getNext();
+    string _name = line.getNext();
+
+    //提前判断合法性
+    if (!is_valid(_UseerId) || !is_valid(_password) || !is_visible(_name) ||
+        _priority[0] < '0' || _priority[0] > '7' || _priority.length() != 1 ||
+        _UseerId.length() > 30 || _password.length() > 30 || _name.length() > 30) {
         throw Error("Invalid\n");
     }
 
-    std::string user_id = input.getNext();
-    if (!Validator::isValidUserID(user_id)) {
+    if (line.count != 5) {
         throw Error("Invalid\n");
     }
 
-    std::vector<int> ans;
-    userId_pos.find_node(user_id, ans);
+    if (getCurrentPrivilege() <= _priority[0] - '0' ||
+        getCurrentPrivilege() < 3) {//权限不足,失败
+        throw Error("Invalid\n");
+    }
+
+    vector<int> ans;
+    userId_pos.find_node(_UseerId, ans);
+    if (!ans.empty()) {
+        throw Error("Invalid\n");
+    } //重复,失败
+
+    Account temp(_UseerId, _name, _password, _priority[0] - '0');
+    int pos = accountStorage.write(temp);
+    userId_pos.insert_node(DataNode(_UseerId, pos));
+}
+
+void AccountManager::changePassword(Command &line) {
+    string UseerId = line.getNext();
+    string old_password = line.getNext();
+    string new_password = line.getNext();
+
+    //提前判断合法性
+    if (!is_valid(UseerId) || !is_valid(old_password) || !is_valid(new_password) ||
+        UseerId.length() > 30 || old_password.length() > 30 || new_password.length() > 30) {
+        throw Error("Invalid\n");
+    }
+
+    if (line.count < 3 || line.count > 4) {
+        throw Error("Invalid\n");
+    }
+
+    if (getCurrentPrivilege() < 1) {
+        throw Error("Invalid\n");
+    }
+
+    vector<int> ans;
+    userId_pos.find_node(UseerId, ans);
     if (ans.empty()) {
         throw Error("Invalid\n");
-    }
+    } //不存在,失败
 
     Account temp;
     accountStorage.read(temp, ans[0]);
-
-    if (getCurrentPrivilege() == 7) {
-        // root 用户修改密码
-        std::string newPassword = input.getNext();
-        if (!Validator::isValidUserID(newPassword)) {
+    //有密码,那么就判断正误
+    if (!new_password.empty()) {
+        if (strcmp(temp.password, old_password.c_str() ) != 0) {
+            //密码错误
             throw Error("Invalid\n");
+        } else {
+            temp.changePassword(new_password);
+            accountStorage.update(temp, ans[0]);
         }
-        temp.changePassword(newPassword);
     } else {
-        // 普通用户修改密码
-        if (input.count != 4) {
+        if (getCurrentPrivilege() == 7) {
+            //权限为7,上方的old读到的就是new
+            temp.changePassword(old_password);
+            accountStorage.update(temp, ans[0]);
+        } else {
             throw Error("Invalid\n");
         }
-        std::string currentPassword = input.getNext();
-        std::string newPassword = input.getNext();
-
-        if (!Validator::isValidUserID(currentPassword) ||
-            !Validator::isValidUserID(newPassword)) {
-            throw Error("Invalid\n");
-        }
-
-        if (strcmp(currentPassword.c_str(), temp.password) != 0) {
-            throw Error("Invalid\n");
-        }
-
-        temp.changePassword(newPassword);
     }
-
-    accountStorage.update(temp, ans[0]);
 }
 
-void AccountManager::addUser(Command &input, LogManager &log) {
-    if (input.count != 5) {
-        throw Error("Invalid\n");
-    }
-
-    std::string user_id = input.getNext();
-    std::string password = input.getNext();
-    std::string privilege_str = input.getNext();
-    std::string user_name = input.getNext();
-
-    // 验证所有输入
-    if (!Validator::isValidUserID(user_id) ||
-        !Validator::isValidUserID(password) ||
-        !Validator::isValidUsername(user_name)) {
-        throw Error("Invalid\n");
-    }
-
-    int privilege;
-    try {
-        privilege = std::stoi(privilege_str);
-        if (privilege != 1 && privilege != 3 && privilege != 7) {
-            throw Error("Invalid\n");
-        }
-    } catch (...) {
-        throw Error("Invalid\n");
-    }
-
-    if (getCurrentPrivilege() < 3 || privilege >= getCurrentPrivilege()) {
-        throw Error("Invalid\n");
-    }
-
-    std::vector<int> ans;
-    userId_pos.find_node(user_id, ans);
-    if (!ans.empty()) {
-        throw Error("Invalid\n");
-    }
-
-    Account temp(user_id, user_name, password, privilege);
-    int pos = accountStorage.write(temp);
-    if (pos <= 0) throw Error("Invalid\n");
-
-    account_count++;
-    accountStorage.write_info(account_count, 1);
-
-    if (!userId_pos.insert_node(DataNode(user_id, pos))) {
-        throw Error("Invalid\n");
-    }
-
-    // 添加日志
-    Log addUserLog;
-    addUserLog.behavoir = ActionType::ADDUSER;
-    addUserLog.use = &loginStack.back().account;
-    snprintf(addUserLog.description, 150, "Added user %s with privilege %d",
-             user_id.c_str(), privilege);
-    log.AddLog(addUserLog);
+int AccountManager::getCurrentPrivilege() const{
+    if (loginStack.empty()) return 0;
+    return loginStack.back().account.privilege;
 }
 
-void AccountManager::deleteUser(Command &input, LogManager &log) {
-    if (getCurrentPrivilege() != 7 || input.count != 2) {
+void AccountManager::deleteUser(Command &line, LogManager &logs) {
+    if (line.count != 2 || getCurrentPrivilege() < 7) {
+        //权限不足
         throw Error("Invalid\n");
     }
 
-    std::string user_id = input.getNext();
-    if (!Validator::isValidUserID(user_id)) {
+    string UseerId = line.getNext();
+    if (!is_valid(UseerId) || UseerId.length() > 30) {
         throw Error("Invalid\n");
     }
 
-    std::vector<int> ans;
-    userId_pos.find_node(user_id, ans);
+    vector<int> ans;
+    userId_pos.find_node(UseerId, ans);
     if (ans.empty()) {
         throw Error("Invalid\n");
-    }
+    } //不存在,失败
 
-    // 检查用户是否已登录
-    for (const auto &login : loginStack) {
-        if (login.account.UserId == AccountId(user_id)) {
+    //已经登录,失败
+    for (auto item:loginStack){
+        if (item.account.UserId.getUserId() == UseerId) {
             throw Error("Invalid\n");
         }
     }
 
     accountStorage.Delete(ans[0]);
-    userId_pos.delete_node(DataNode(user_id, ans[0]));
-
-    account_count--;
-    accountStorage.write_info(account_count, 1);
-
-    // 添加日志
-    Log deleteUserLog;
-    deleteUserLog.behavoir = ActionType::DELETEUSER;
-    deleteUserLog.use = &loginStack.back().account;
-    snprintf(deleteUserLog.description, 150, "Deleted user %s", user_id.c_str());
-    log.AddLog(deleteUserLog);
+    userId_pos.delete_node(DataNode(UseerId, ans[0]));
 }
 
 void AccountManager::selectBook(int book_id) {
-    if (loginStack.empty()) {
-        throw Error("Invalid\n");
-    }
     loginStack.back().selectedBookId = book_id;
-}
-
-int AccountManager::getCurrentPrivilege() const {
-    if (loginStack.empty()) {
-        return 0;
-    }
-    return loginStack.back().account.privilege;
-}
-
-Account* AccountManager::getCurrentAccount() {
-    if (loginStack.empty()) {
-        return nullptr;
-    }
-    return &loginStack.back().account;
 }

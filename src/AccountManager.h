@@ -46,6 +46,7 @@ private:
     friend class AccountManager;
     friend class BookManager;
 public:
+    LogInAccount() = default;
     LogInAccount(const Account &acc) : account(acc), selectedBookId(0) {}
 };
 

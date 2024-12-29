@@ -1,117 +1,124 @@
-#ifndef MEMORYRIVER_H
-#define MEMORYRIVER_H
+//
+// Created by Leonard C on 2021/12/12.
+//
+
+#ifndef BOOKSTORE_FILE_IO_H
+#define BOOKSTORE_FILE_IO_H
 
 #include <fstream>
-#include <string>
-#include <unistd.h>
-#include "error.h"
 
-template<class T>
+using std::string;
+using std::fstream;
+using std::ifstream;
+using std::ofstream;
+
+template<class T, int info_len = 2>
 class MemoryRiver {
 private:
-   std::fstream file;
-   std::string file_name;
-   int sizeofT = sizeof(T);
-
-   void move_read_pointer(int pos) {
-       file.seekg(pos, std::ios::beg);
-   }
-
-   void move_write_pointer(int pos) {
-       file.seekp(pos, std::ios::beg);
-   }
+    fstream file;
+    string file_name;
+    int sizeofT = sizeof(T);
 
 public:
-   MemoryRiver() = default;
+    MemoryRiver() = default;
 
-   explicit MemoryRiver(const std::string &file_name) : file_name(file_name) {}
+    MemoryRiver(const string &file_name) : file_name(file_name) { initialise(); }
 
-    void initialise(std::string FN = "") {
-       try {
-           if (!FN.empty()) file_name = FN;
+    void initialise(string FN = "") {
+        if (FN != "") file_name = FN;
+        file.open(file_name, std::fstream::in | std::fstream::out);
+        if (!file) {
+            file.open(file_name, std::ofstream::out);
+            //新建文件
+            int tmp = 0;
+            for (int i = 0; i < info_len; ++i)
+                file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
+        }
+        file.close();
+    }
 
-           // 首先检查文件是否可访问
+    //读出第n个int的值赋给tmp，1_base
+    void get_info(int &tmp, int n) {
+        if (n > info_len) return;
+        file.open(file_name);
+        file.seekg((n - 1) * sizeof(int));
+        file.read(reinterpret_cast<char *>(&tmp), sizeof(int));
+        file.close();
+        return;
+    }
 
-           // 尝试以只读方式打开检查文件是否存在
-           std::ifstream test(file_name);
-           if (test.is_open()) {
-               test.close();
-           }
+    //将tmp写入第n个int的位置，1_base
+    void write_info(int tmp, int n) {
+        if (n > info_len) return;
+        file.open(file_name);
+        file.seekp((n - 1) * sizeof(int));
+        file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
+        file.close();
+        return;
+    }
 
-           // 尝试打开文件
-           file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-           if (!file.is_open()) {
-               // 文件不存在，创建新文件
-               file.clear();
-               file.open(file_name, std::ios::out | std::ios::binary);
-               if (!file.is_open()) {
-                   char cwd[1024];
-                   if (getcwd(cwd, sizeof(cwd)) != NULL) {
-                       std::cerr << cwd << std::endl;
-                   }
-                   throw Error("Failed to open file\n");
-               }
-           }
+    //在文件合适位置写入类对象t，并返回写入的位置索引index
+    //位置索引意味着当输入正确的位置索引index，在以下三个函数中都能顺利的找到目标对象进行操作
+    //位置索引index可以取为对象写入的起始位置
+    int write(T &t) {
+        int index;
+        int num_T, del_head;//临时声明,从文件中赋值,最后写回文件中
+        get_info(num_T, 1);
+        get_info(del_head, 2);
 
-           // 初始化文件头
-           int tmp = 0;
-           file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
-           if (!file.good()) {
-               throw Error("Failed to write file\n");
-           }
-           file.flush();  // 确保数据写入磁盘
-           file.close();
-       } catch (const std::exception& e) {
-           throw;
-       }
-   }
+        file.open(file_name);
+        if (!del_head) {//没有删除过,在文件尾部加
+            index = info_len * sizeof(int) + num_T * sizeofT;
+            //del_head还是0(相当于上一个节点的指针)
+        } else {//在释放掉的空间加
+            index = del_head;
+            file.seekg(del_head);
+            file.read(reinterpret_cast<char *>(&del_head), sizeof(int));
+        }
+        file.seekp(index);
+        file.write(reinterpret_cast<char *>(&t), sizeofT);
+        file.close();
 
-   void get_info(int &tmp, const int n) {
-       file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-       move_read_pointer((n - 1) * sizeof(int));
-       file.read(reinterpret_cast<char *>(&tmp), sizeof(int));
-       file.close();
-   }
+        //num_T 更新
+        num_T++;
+        write_info(num_T, 1);
+        write_info(del_head, 2);//更新 del_head 的值
+        return index;
+    }
 
-   void write_info(const int tmp, const int n) {
-       file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-       move_write_pointer((n - 1) * sizeof(int));
-       file.write(reinterpret_cast<const char *>(&tmp), sizeof(int));
-       file.close();
-   }
+    //用t的值更新位置索引index对应的对象，保证调用的index都是由write函数产生
+    bool update(T &t, const int index) {
+        file.open(file_name);
+        file.seekp(index);
+        file.write(reinterpret_cast<char *>(&t), sizeofT);
+        bool success = file.good();
+        file.close();
+        return success;
+    }
 
-    int write(const T &t) {
-       file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-       file.seekp(0, std::ios::end);  // 移动到文件末尾
-       int index = file.tellp();
-       file.write(reinterpret_cast<const char*>(&t), sizeofT);
-       bool success = file.good();
-       file.close();
-       return success ? index : -1;
-   }
+    //读出位置索引index对应的T对象的值并赋值给t，保证调用的index都是由write函数产生
+    bool read(T &t, const int index) {
+        file.open(file_name);
+        file.seekg(index);
+        file.read(reinterpret_cast<char *>(&t), sizeofT);
+        bool success = file.good();
+        file.close();
+        return success;
+    }
 
-   bool update(const T &t, const int index) {
-       file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
-       move_write_pointer(index);
-       file.write(reinterpret_cast<const char*>(&t), sizeofT);
-       bool success = file.good();
-       file.close();
-       return success;
-   }
+    //删除位置索引index对应的对象(不涉及空间回收时，可忽略此函数)，保证调用的index都是由write函数产生
+    void Delete(int index) {
+        int del_head;
+        get_info(del_head, 2);
 
-   bool read(T &t, const int index) {
-       file.open(file_name, std::ios::in | std::ios::binary);
-       move_read_pointer(index);
-       file.read(reinterpret_cast<char*>(&t), sizeofT);
-       bool success = file.good();
-       file.close();
-       return success;
-   }
+        file.open(file_name);
+        file.seekp(index);
+        file.write(reinterpret_cast<char *>(&del_head), sizeof(int));
+        del_head = index;
+        file.close();
 
-   void Delete(int index) {
-       T tmp{};
-       update(tmp, index);
-   }
+        write_info(del_head, 2);
+    }
 };
 
-#endif //MEMORYRIVER_H
+#endif //BOOKSTORE_FILE_IO_H
