@@ -236,7 +236,7 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
         std::cout << '\n';
     }
     if (account.loginStack.empty()) {
-        std::cout << "Invalid\n";
+        throw Error("Invalid\n");
     }
     else {
         for (const auto &book : results) {
@@ -246,6 +246,9 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
 }
 
 void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs) {
+    if (accounts.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
     if (input.count != 3) {
         throw Error("Invalid\n");
     }
@@ -290,6 +293,9 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
 }
 
 void BookManager::Select(Command &input, AccountManager &accounts, LogManager &logs) {
+    if (accounts.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
     if (accounts.getCurrentPrivilege() < 3 || input.count != 2) {
         throw Error("Invalid\n");
     }
@@ -492,6 +498,9 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
 }
 
 void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManager &logs) {
+    if (accounts.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
     if (accounts.getCurrentPrivilege() < 3 || input.count != 3) {
         throw Error("Invalid\n");
     }
