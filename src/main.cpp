@@ -7,13 +7,7 @@
 #include "error.h"
 #include "MemoryRiver.h"
 #include "BlockLink.h"
-
-bool isWithinAscll(char input) {
-   if (input < 0 || input > 127) {
-       return false;
-   }
-   return true;
-}
+#include "validator.h"
 
 int main() {
    std::string input;
@@ -25,7 +19,7 @@ int main() {
        try {
            Command command(input);
            for (int i = 0;i < input.length(); ++i) {
-               if (!isWithinAscll(input[i])) {
+               if (!Validator::isWithinAscll(input[i])) {
                    throw Error("Invalid\n");
                }
            }
@@ -94,7 +88,8 @@ int main() {
            else if (order == "import") {
                books.ImportBook(command,accounts,logs);
            }
-           else if (order == "report") {//TODO完成LogManager后补充
+           else if (order == "report") {
+               //TODO:完成LogManager后补充
            }
            else if (order == "log") {//TODO
            }
