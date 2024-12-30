@@ -79,24 +79,18 @@ void AccountManager::logIn(Command &input) {
         throw Error("Invalid\n");
     }
 
-    // 如果loginStack为空，直接登录成功
-    if (loginStack.empty()) {
-        LogInAccount tp;
-        tp.account = temp;
-        loginStack.push_back(tp);
-        return;
-    }
-
     // 否则需要检查密码
     if (s.empty()) {
         if (getCurrentPrivilege() >= temp.getPrivilege()) {
             LogInAccount tp;
             tp.account = temp;
             loginStack.push_back(tp);
-        } else {
+        }
+        else {
             throw Error("Invalid\n");
         }
-    } else {
+    }
+    else {
         if (strcmp(s.c_str(), temp.password) != 0) {
             throw Error("Invalid\n");
         }
@@ -247,5 +241,8 @@ void AccountManager::deleteUser(Command &input, LogManager &logs) {
 }
 
 void AccountManager::selectBook(int book_id) {
+    if (getCurrentPrivilege() < 3) {
+        throw Error("Invalid\n");
+    }
     loginStack.back().selectedBookId = book_id;
 }
