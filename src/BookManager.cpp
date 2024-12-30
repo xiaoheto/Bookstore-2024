@@ -234,7 +234,11 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
     std::sort(results.begin(), results.end());
     if (results.empty()) {
         std::cout << '\n';
-    } else {
+    }
+    if (account.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
+    else {
         for (const auto &book : results) {
             std::cout << book;
         }
@@ -242,6 +246,9 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
 }
 
 void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs) {
+    if (accounts.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
     if (input.count != 3) {
         throw Error("Invalid\n");
     }
@@ -350,18 +357,16 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
         try {
             if (command.substr(0,6) == "-ISBN=") {
                 if (modified_isbn) throw Error("Invalid\n");
-                if (command.length() <= 7 || command[6] != '\"' || command.back() != '\"') {
-                    throw Error("Invalid\n");
-                }
-                std::string isbn = command.substr(7, command.length() - 8);
+                std::string isbn = command.substr(6);
                 if (!Validator::isValidISBN(isbn)) {
                     throw Error("Invalid\n");
                 }
 
-                // 检查新ISBN是否已存在或与原ISBN相同
+                // 检查新ISBN是否与原ISBN相同
                 if (strcmp(isbn.c_str(), oldBook.ISBN.ISBN) == 0) {
                     throw Error("Invalid\n");
                 }
+                // 检查新ISBN是否已存在
                 std::vector<int> check;
                 BookISBN_pos.find_node(isbn, check);
                 if (!check.empty()) {
@@ -412,7 +417,6 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
             }
             else if (command.substr(0,7) == "-price=") {
                 if (modified_price) throw Error("Invalid\n");
-
                 std::string price_str = command.substr(7);
                 if (!Validator::isValidPrice(price_str)) {
                     throw Error("Invalid\n");
@@ -439,34 +443,42 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
     // 如果有修改，更新图书信息和索引
     if (modified_isbn || modified_name || modified_author ||
         modified_keyword || modified_price) {
+
         // 更新索引
         if (modified_isbn) {
-            BookISBN_pos.delete_node(DataNode(oldBook.ISBN.ISBN, positions[0]));
+            DataNode oldISBNNode(oldBook.ISBN.ISBN, positions[0]);
+            BookISBN_pos.delete_node(oldISBNNode);
             BookISBN_pos.insert_node(DataNode(newBook.ISBN.ISBN, positions[0]));
         }
+
         if (modified_name) {
-            BookName_pos.delete_node(DataNode(oldBook.book_name.Bookname, positions[0]));
+            DataNode oldNameNode(oldBook.book_name.Bookname, positions[0]);
+            BookName_pos.delete_node(oldNameNode);
             BookName_pos.insert_node(DataNode(newBook.book_name.Bookname, positions[0]));
         }
+
         if (modified_author) {
-            Author_pos.delete_node(DataNode(oldBook.author_name.Author, positions[0]));
+            DataNode oldAuthorNode(oldBook.author_name.Author, positions[0]);
+            Author_pos.delete_node(oldAuthorNode);
             Author_pos.insert_node(DataNode(newBook.author_name.Author, positions[0]));
         }
+
         if (modified_keyword) {
-            // 删除旧关键词
-            std::string old_keywords(oldBook.key_word.Keyword);
-            std::istringstream old_ss(old_keywords);
-            std::string old_keyword;
-            while (std::getline(old_ss, old_keyword, '|')) {
-                Keyword_pos.delete_node(DataNode(old_keyword, positions[0]));
+            // 删除所有旧关键词
+            std::string oldKeywords(oldBook.key_word.Keyword);
+            std::istringstream old_ss(oldKeywords);
+            std::string oldKeyword;
+            while (std::getline(old_ss, oldKeyword, '|')) {
+                DataNode oldKeywordNode(oldKeyword, positions[0]);
+                Keyword_pos.delete_node(oldKeywordNode);
             }
 
-            // 添加新关键词
-            std::string new_keywords(newBook.key_word.Keyword);
-            std::istringstream new_ss(new_keywords);
-            std::string new_keyword;
-            while (std::getline(new_ss, new_keyword, '|')) {
-                Keyword_pos.insert_node(DataNode(new_keyword, positions[0]));
+            // 添加所有新关键词
+            std::string newKeywords(newBook.key_word.Keyword);
+            std::istringstream new_ss(newKeywords);
+            std::string newKeyword;
+            while (std::getline(new_ss, newKeyword, '|')) {
+                Keyword_pos.insert_node(DataNode(newKeyword, positions[0]));
             }
         }
 
@@ -483,6 +495,9 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
 }
 
 void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManager &logs) {
+    if (accounts.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
     if (accounts.getCurrentPrivilege() < 3 || input.count != 3) {
         throw Error("Invalid\n");
     }
@@ -519,10 +534,9 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     book.TotalCost += total_cost;
     BookStorage.update(book, positions[0]);
 
-    // 添加日志
     Log importLog;
     importLog.behavoir = ActionType::IMPORTBOOK;
-    importLog.use = nullptr;  // 避免使用悬挂指针
+    importLog.use = nullptr;
     importLog.isIncome = false;
     importLog.Amount = total_cost;
     snprintf(importLog.description, sizeof(importLog.description),

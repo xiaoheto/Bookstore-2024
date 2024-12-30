@@ -57,7 +57,7 @@ AccountManager::AccountManager(const string &file_name) {
 }
 
 void AccountManager::logIn(Command &input) {
-    if (input.count < 2 || input.count > 3) {
+    if (input.count != 2 && input.count != 3) {
         throw Error("Invalid\n");
     }
 
@@ -69,36 +69,34 @@ void AccountManager::logIn(Command &input) {
     userId_pos.find_node(UseerId, ans);
     if (ans.empty()) {
         throw Error("Invalid\n");
-    }//没注册过,失败
+    }//用户不存在,失败
 
-    int cur_priority = getCurrentPrivilege();
     Account temp;
     accountStorage.read(temp, ans[0]);
 
     string s = input.getNext();
-    if (!s.empty() && (!Validator::isValidUserID(s) || s.length() > 30) ) {
+    if (!s.empty() && (!Validator::isValidUserID(s) || s.length() > 30)) {
         throw Error("Invalid\n");
     }
-    if (!s.empty()) {
-        if (strcmp(s.c_str(), temp.password) != 0) {
-            throw Error("Invalid\n");
-        } else {
+
+    // 否则需要检查密码
+    if (s.empty()) {
+        if (getCurrentPrivilege() >= temp.getPrivilege()) {
             LogInAccount tp;
             tp.account = temp;
             loginStack.push_back(tp);
-            return;
-        }
-    }
-    else {
-        if (cur_priority >= temp.getPrivilege()) {
-            LogInAccount tp;
-            tp.account = temp;
-            loginStack.push_back(tp);
-            return;
         }
         else {
             throw Error("Invalid\n");
         }
+    }
+    else {
+        if (strcmp(s.c_str(), temp.password) != 0) {
+            throw Error("Invalid\n");
+        }
+        LogInAccount tp;
+        tp.account = temp;
+        loginStack.push_back(tp);
     }
 }
 
@@ -168,46 +166,46 @@ void AccountManager::addUser(Command &input, LogManager &logs) {
 }
 
 void AccountManager::changePassword(Command &input) {
-    string UseerId = input.getNext();
-    string old_password = input.getNext();
-    string new_password = input.getNext();
+    string UserID = input.getNext();
+    string oldPassword = input.getNext();
+    string newPassword;
 
-    if (!Validator::isValidUserID(UseerId) || !Validator::isValidUserID(old_password) || !Validator::isValidUserID(new_password) ||
-        UseerId.length() > 30 || old_password.length() > 30 || new_password.length() > 30) {
+    if (input.count == 3) {
+        newPassword = oldPassword;
+        oldPassword = "";
+    } else if (input.count == 4) {
+        newPassword = input.getNext();
+    } else {
         throw Error("Invalid\n");
     }
 
-    if (input.count < 3 || input.count > 4) {
+    if (!Validator::isValidUserID(UserID) || UserID.length() > 30 ||
+        (!oldPassword.empty() && (!Validator::isValidUserID(oldPassword) || oldPassword.length() > 30)) ||
+        !Validator::isValidUserID(newPassword) || newPassword.length() > 30) {
         throw Error("Invalid\n");
-    }
+        }
 
     if (getCurrentPrivilege() < 1) {
         throw Error("Invalid\n");
     }
 
     vector<int> ans;
-    userId_pos.find_node(UseerId, ans);
+    userId_pos.find_node(UserID, ans);
     if (ans.empty()) {
         throw Error("Invalid\n");
-    } //不存在,失败
+    }
 
     Account temp;
     accountStorage.read(temp, ans[0]);
-    if (!new_password.empty()) {
-        if (strcmp(temp.password, old_password.c_str() ) != 0) {
-            throw Error("Invalid\n");
-        } else {
-            temp.changePassword(new_password);
-            accountStorage.update(temp, ans[0]);
-        }
-    } else {
-        if (getCurrentPrivilege() == 7) {
-            temp.changePassword(old_password);
-            accountStorage.update(temp, ans[0]);
-        } else {
+
+    if (getCurrentPrivilege() < 7) {
+        if (oldPassword.empty() || strcmp(temp.password, oldPassword.c_str()) != 0) {
             throw Error("Invalid\n");
         }
     }
+
+    temp.changePassword(newPassword);
+    accountStorage.update(temp, ans[0]);
 }
 
 int AccountManager::getCurrentPrivilege() const{
@@ -243,5 +241,8 @@ void AccountManager::deleteUser(Command &input, LogManager &logs) {
 }
 
 void AccountManager::selectBook(int book_id) {
+    if (getCurrentPrivilege() < 3) {
+        throw Error("Invalid\n");
+    }
     loginStack.back().selectedBookId = book_id;
 }

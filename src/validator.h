@@ -28,6 +28,13 @@ namespace Validator {
         return true;
     }
 
+    inline bool isWithinAscll(char input) {
+        if (input < 0 || input > 127) {
+            return false;
+        }
+        return true;
+    }
+
     // ISBN验证（除不可见字符外的ASCII字符，最大20字符）
     inline bool isValidISBN(const std::string &str) {
         if (str.empty() || str.length() > 20) return false;
