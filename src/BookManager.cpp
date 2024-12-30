@@ -534,10 +534,9 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     book.TotalCost += total_cost;
     BookStorage.update(book, positions[0]);
 
-    // 添加日志
     Log importLog;
     importLog.behavoir = ActionType::IMPORTBOOK;
-    importLog.use = nullptr;  // 避免使用悬挂指针
+    importLog.use = nullptr;
     importLog.isIncome = false;
     importLog.Amount = total_cost;
     snprintf(importLog.description, sizeof(importLog.description),
