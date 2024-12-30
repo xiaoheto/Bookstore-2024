@@ -171,8 +171,8 @@ void AccountManager::changePassword(Command &input) {
     string newPassword;
 
     if (input.count == 3) {
-        newPassword = oldPassword; 
-        oldPassword = ""; 
+        newPassword = oldPassword;
+        oldPassword = "";
     } else if (input.count == 4) {
         newPassword = input.getNext();
     } else {
