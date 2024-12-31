@@ -115,6 +115,11 @@ public:
 
         write_info(del_head, 2);
     }
+    void clear() {
+        file.open(file_name);
+        file.clear();
+        file.close();
+    }
 };
 
 #endif //BOOKSTORE_MEMORYRIVER_H

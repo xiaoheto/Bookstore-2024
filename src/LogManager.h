@@ -27,7 +27,6 @@ enum class ActionType {
 
 class Log {
 public:
-    Account *use;
     ActionType behavoir;
     char description[150];
     bool isIncome = false; // 表示是否是收入

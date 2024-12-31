@@ -246,9 +246,6 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
 }
 
 void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs) {
-    if (accounts.loginStack.empty()) {
-        throw Error("Invalid\n");
-    }
     if (input.count != 3) {
         throw Error("Invalid\n");
     }
@@ -260,13 +257,10 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
 
     std::string quantityStr = input.getNext();
     int quantity;
-    try {
-        quantity = std::stoi(quantityStr);
-        if (quantity <= 0) throw Error("Invalid\n");
-    } catch (...) {
+    quantity = std::stoi(quantityStr);
+    if (quantity <= 0) {
         throw Error("Invalid\n");
     }
-
     std::vector<int> positions;
     BookISBN_pos.find_node(isbn, positions);
     if (positions.empty()) {
@@ -286,9 +280,10 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     std::cout << std::fixed << std::setprecision(2) << totalCost << '\n';
 
     Log buyLog;
-    buyLog.isIncome = true;
-    buyLog.Amount = totalCost;
     buyLog.behavoir = ActionType::BUY;
+    buyLog.isIncome = true;
+    // 确保Amount的精度和输出一致
+    buyLog.Amount = std::round(totalCost * 100) / 100.0;
     logs.AddLog(buyLog);
 }
 
@@ -488,7 +483,6 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
         // 添加日志
         Log modifyLog;
         modifyLog.behavoir = ActionType::MODIFYBOOK;
-        modifyLog.use = &accounts.loginStack.back().account;
         modifyLog.Amount = 0;
         logs.AddLog(modifyLog);
     }
@@ -536,11 +530,7 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
 
     Log importLog;
     importLog.behavoir = ActionType::IMPORTBOOK;
-    importLog.use = nullptr;
     importLog.isIncome = false;
     importLog.Amount = total_cost;
-    snprintf(importLog.description, sizeof(importLog.description),
-             "Import %d copies of book (ISBN: %s) with total cost %.2f",
-             quantity, book.ISBN.ISBN, total_cost);
     logs.AddLog(importLog);
 }
