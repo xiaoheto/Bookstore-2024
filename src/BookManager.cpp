@@ -292,11 +292,8 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     buyLog.isIncome = true;
     strcpy(buyLog.owner ,accounts.loginStack.back().account.UserId.getUserId().c_str());
     // 确保Amount的精度和输出一致
-    buyLog.Amount = std::round(totalCost * 10000) / 10000.0;
+    buyLog.Amount = std::round(totalCost * 100) / 100.0;
     logs.AddLog(buyLog);
-
-    financeRecords.push_back(std::llround(totalCost * 10000));
-
 }
 
 void BookManager::Select(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -554,6 +551,4 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     importLog.isIncome = false;
     importLog.Amount = total_cost;
     logs.AddLog(importLog);
-
-    financeRecords.push_back(-std::llround(total_cost * 10000));
 }
