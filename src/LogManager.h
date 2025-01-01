@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <iomanip>
-#include <map>
 
 #include "BlockLink.h"
 #include "MemoryRiver.h"
@@ -28,10 +27,11 @@ enum class ActionType {
 
 class Log {
 public:
+    Account *use;
     ActionType behavoir;
+    char description[150];
     bool isIncome = false; // 表示是否是收入
     double Amount = 0;
-    char owner[31];
 
     Log() = default;
 };
@@ -40,19 +40,18 @@ class LogManager {
 private:
     MemoryRiver<Log> logStorage;
     int financeCount = 0; // 交易笔数
-std::vector<long long> financeRecords;
 
 public:
     LogManager();
 
     void ShowFinance(int need = -1);
 
-    void ReportFinance();
+    void Report_employee(Command& line, AccountManager& accounts);
 
-    void ShowLog();
+    void Report_myself(Command &line, AccountManager& accounts);
 
     void AddLog(Log& log); // 把 log 放进文件的同时还需要检查是否有交易
 
-    void ReportEmployee();
+    void Log_ch(Command& line); // log command，检查有无额外的 token
 };
 #endif //LOGMANAGER_H
