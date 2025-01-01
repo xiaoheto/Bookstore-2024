@@ -12,6 +12,7 @@ private:
     
     friend class Account;
     friend class AccountManager;
+    friend class BookManager;
 public:
     AccountId() = default;
     AccountId(const std::string user_id);
@@ -29,6 +30,7 @@ private:
     int privilege;
     
     friend class AccountManager;
+    friend class BookManager;
 public:
     Account() = default;
     Account(const std::string &user_id, const std::string &user_name, 
