@@ -22,11 +22,11 @@ public:
 
     void initialise(string FN = "") {
         if (FN != "") file_name = FN;
-        file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
+        std::remove(file_name.c_str());
+        file.open(file_name, std::fstream::in | std::fstream::out);
         if (!file) {
-            file.close();
-            file.clear();
-            file.open(file_name, std::ios::out | std::ios::binary);
+            file.open(file_name, std::ofstream::out);
+            //新建文件
             int tmp = 0;
             for (int i = 0; i < info_len; ++i)
                 file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
