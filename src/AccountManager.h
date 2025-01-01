@@ -12,11 +12,10 @@ private:
     
     friend class Account;
     friend class AccountManager;
-    friend class BookManager;
 public:
     AccountId() = default;
     AccountId(const std::string user_id);
-    
+
     std::string getUserId() const;
     bool operator==(const AccountId &other) const;
     bool operator<(const AccountId &other) const;
@@ -28,9 +27,8 @@ private:
     char UserName[31];
     char password[31];
     int privilege;
-    
+
     friend class AccountManager;
-    friend class BookManager;
 public:
     Account() = default;
     Account(const std::string &user_id, const std::string &user_name, 
