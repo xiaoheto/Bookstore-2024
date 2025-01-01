@@ -163,6 +163,12 @@ void AccountManager::addUser(Command &input, LogManager &logs) {
     Account temp(_UseerId, _name, _password, _priority[0] - '0');
     int pos = accountStorage.write(temp);
     userId_pos.insert_node(DataNode(_UseerId, pos));
+    Log addUserLog;
+    addUserLog.behavoir = ActionType::ADDUSER;
+    strcpy(addUserLog.owner, loginStack.back().account.UserId.getUserId().c_str());
+    addUserLog.isIncome = false;
+    addUserLog.Amount = 0;
+    logs.AddLog(addUserLog);
 }
 
 void AccountManager::changePassword(Command &input) {
@@ -238,6 +244,12 @@ void AccountManager::deleteUser(Command &input, LogManager &logs) {
 
     accountStorage.Delete(ans[0]);
     userId_pos.delete_node(DataNode(UseerId, ans[0]));
+    Log deleteUserLog;
+    deleteUserLog.behavoir = ActionType::DELETEUSER;
+    strcpy(deleteUserLog.owner, loginStack.back().account.UserId.getUserId().c_str());
+    deleteUserLog.isIncome = false;
+    deleteUserLog.Amount = 0;
+    logs.AddLog(deleteUserLog);
 }
 
 void AccountManager::selectBook(int book_id) {
@@ -245,4 +257,96 @@ void AccountManager::selectBook(int book_id) {
         throw Error("Invalid\n");
     }
     loginStack.back().selectedBookId = book_id;
+}
+
+void LogManager::ReportEmployee() {
+    logStorage.get_info(financeCount, 1);
+    const int headerSize = 2 * sizeof(int);
+
+    // 使用map来统计每个员工的操作
+    std::map<std::string, std::vector<Log>> employeeStats;
+
+    // 读取所有日志并按员工分类
+    for(int i = 0; i < financeCount; i++) {
+        Log log;
+        logStorage.read(log, headerSize + i * sizeof(Log));
+        employeeStats[log.owner].push_back(log);
+    }
+
+    // 打印漂亮的报表
+    std::cout << "================ 员工工作报告 ================\n\n";
+
+    for(const auto& [employee, logs] : employeeStats) {
+        // 统计各类操作数量
+        int totalOps = logs.size();
+        int bookSales = 0;
+        int bookImports = 0;
+        int bookModifications = 0;
+        double totalSales = 0;
+        double totalCosts = 0;
+
+        for(const auto& log : logs) {
+            switch(log.behavoir) {
+                case ActionType::BUY:
+                    bookSales++;
+                    totalSales += log.Amount;
+                    break;
+                case ActionType::IMPORTBOOK:
+                    bookImports++;
+                    totalCosts += log.Amount;
+                    break;
+                case ActionType::MODIFYBOOK:
+                    bookModifications++;
+                    break;
+            }
+        }
+
+        std::cout << "员工ID: " << employee << "\n";
+        std::cout << "--------------------------------\n";
+        std::cout << "总操作次数: " << totalOps << "\n";
+        std::cout << "图书销售: " << bookSales << " 笔\n";
+        std::cout << "图书进货: " << bookImports << " 笔\n";
+        std::cout << "图书信息修改: " << bookModifications << " 次\n";
+        std::cout << "销售总额: " << std::fixed << std::setprecision(2)
+                  << totalSales << " 元\n";
+        std::cout << "进货支出: " << std::fixed << std::setprecision(2)
+                  << totalCosts << " 元\n";
+
+        // 打印详细操作记录
+        std::cout << "\n详细操作记录:\n";
+        for(const auto& log : logs) {
+            std::cout << "- ";
+            switch(log.behavoir) {
+                case ActionType::BUY:
+                    std::cout << "销售图书 (金额: " << log.Amount << " 元)";
+                    break;
+                case ActionType::IMPORTBOOK:
+                    std::cout << "进货操作 (金额: " << log.Amount << " 元)";
+                    break;
+                case ActionType::MODIFYBOOK:
+                    std::cout << "修改图书信息";
+                    break;
+                case ActionType::SELECT:
+                    std::cout << "选择图书";
+                    break;
+                case ActionType::ADDUSER:
+                    std::cout << "创建新用户";
+                    break;
+                case ActionType::DELETEUSER:
+                    std::cout << "删除用户";
+                    break;
+                case ActionType::SHOW:
+                    std::cout << "查询图书";
+                    break;
+            }
+            std::cout << "\n";
+        }
+        std::cout << "\n\n";
+    }
+
+    // 打印总体统计
+    std::cout << "================ 总体统计 ================\n";
+    std::cout << "员工总数: " << employeeStats.size() << "\n";
+    std::cout << "总操作数: " << financeCount << "\n";
+    std::cout << "======================================\n\n";
 }
