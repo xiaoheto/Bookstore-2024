@@ -64,7 +64,6 @@ private:
 public:
     LogManager();
 
-
     void ReportFinance();
 
     void ShowLog();
