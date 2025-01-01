@@ -1,5 +1,5 @@
-#ifndef BOOKSTORE_FILE_IO_H
-#define BOOKSTORE_FILE_IO_H
+#ifndef BOOKSTORE_MEMORYRIVER_H
+#define BOOKSTORE_MEMORYRIVER_H
 
 #include <fstream>
 
@@ -9,7 +9,7 @@ using std::ifstream;
 using std::ofstream;
 
 template<class T, int info_len = 2>
-class MemoryRiver {//一个MemoryRiver 对应一个文件
+class MemoryRiver {
 private:
     fstream file;
     string file_name;
@@ -22,15 +22,15 @@ public:
 
     void initialise(string FN = "") {
         if (FN != "") file_name = FN;
-        file.open(file_name, std::fstream::in | std::fstream::out);
-        if (!file) {//打开不成功说明文件不存在,并且初始化
-            file.open(file_name, std::ofstream::out);
-            //新建文件
+        file.open(file_name, std::ios::in | std::ios::out | std::ios::binary);
+        if (!file) {
+            file.close();
+            file.clear();
+            file.open(file_name, std::ios::out | std::ios::binary);
             int tmp = 0;
             for (int i = 0; i < info_len; ++i)
                 file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
         }
-        //防止连续使用文件时,重复打开导致内部数据被清空
         file.close();
     }
 
@@ -51,7 +51,6 @@ public:
         file.seekp((n - 1) * sizeof(int));
         file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
         file.close();
-        return;
     }
 
     //在文件合适位置写入类对象t，并返回写入的位置索引index
@@ -88,7 +87,9 @@ public:
         file.open(file_name);
         file.seekp(index);
         file.write(reinterpret_cast<char *>(&t), sizeofT);
+        bool success = file.good();
         file.close();
+        return success;
     }
 
     //读出位置索引index对应的T对象的值并赋值给t，保证调用的index都是由write函数产生
@@ -96,7 +97,9 @@ public:
         file.open(file_name);
         file.seekg(index);
         file.read(reinterpret_cast<char *>(&t), sizeofT);
+        bool success = file.good();
         file.close();
+        return success;
     }
 
     //删除位置索引index对应的对象(不涉及空间回收时，可忽略此函数)，保证调用的index都是由write函数产生
@@ -105,17 +108,18 @@ public:
         get_info(del_head, 2);
 
         file.open(file_name);
-        //构造一个类似链表的结构,以del_head为指针
         file.seekp(index);
         file.write(reinterpret_cast<char *>(&del_head), sizeof(int));
         del_head = index;
-        //更新del_head,写入文件中
-        //num_T不需要--!否则链表的位置会出错
-        //所以不用读入num_T
         file.close();
 
         write_info(del_head, 2);
     }
+    void clear() {
+        file.open(file_name);
+        file.clear();
+        file.close();
+    }
 };
 
-#endif //BOOKSTORE_FILE_IO_H
+#endif //BOOKSTORE_MEMORYRIVER_H
