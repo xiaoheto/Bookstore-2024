@@ -10,40 +10,40 @@
 
 struct BookISBN {
     char ISBN[21];  // 20字符 + 结束符
-    
+
     BookISBN() = default;
     explicit BookISBN(const std::string &isbn);
-    
+
     bool operator==(const BookISBN &other) const;
     bool operator<(const BookISBN &other) const;
 };
 
 struct BookName {
     char Bookname[61];  // 60字符 + 结束符
-    
+
     BookName() = default;
     explicit BookName(const std::string &bookname);
-    
+
     bool operator==(const BookName &other) const;
     bool operator<(const BookName &other) const;
 };
 
 struct AuthorName {
     char Author[61];
-    
+
     AuthorName() = default;
     explicit AuthorName(const std::string &authorname);
-    
+
     bool operator==(const AuthorName &other) const;
     bool operator<(const AuthorName &other) const;
 };
 
 struct KeyWord {
     char Keyword[61];
-    
+
     KeyWord() = default;
     explicit KeyWord(const std::string &keyword);
-    
+
     bool operator==(const KeyWord &other) const;
     bool operator<(const KeyWord &other) const;
 };
@@ -89,6 +89,7 @@ private:
     DataFile Author_pos;
     DataFile Keyword_pos;
 
+    friend class LogManager;
     // 私有辅助函数
     bool isValidBookString(const std::string &str, int maxLen) const;
     void processKeywords(const std::string &keywords, std::vector<std::string> &result) const;
@@ -97,7 +98,13 @@ private:
     void validateSelected(const AccountManager &accounts) const;
 
 public:
+    const std::vector<long long>& getFinanceRecords() const {
+        return financeRecords;
+    }
+    MemoryRiver<long long> financeFile;
     std::vector<long long >financeRecords;
+
+    void addFinanceRecord(long long amount);
 
     BookManager();
 

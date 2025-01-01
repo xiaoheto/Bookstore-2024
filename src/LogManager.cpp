@@ -15,20 +15,22 @@ void LogManager::ShowFinance(int need, const std::vector<long long> &records) {
         return;
     }
 
-    if (need > total) {
+    if (need > total || need < -1) {
         throw Error("Invalid\n");
     }
 
-    if (need == -1) need = total;
-
-    long long income = 0, expense = 0;
-    for (int i = total - need; i < total; i++) {
-        if (records[i] > 0) income += records[i];
-        else expense -= records[i];
+    if (need == -1) {
+        need = total;
     }
 
-    std::cout << "+ " << std::fixed << std::setprecision(2) << income / 10000.0
-              << " - " << std::fixed << std::setprecision(2) << expense / 10000.0 << "\n";
+    long long inc = 0, dec = 0;
+    for (int i = total - need; i < total; i++) {
+        if (records[i] > 0) inc += records[i];
+        else dec -= records[i];
+    }
+
+    std::cout << "+ " << std::fixed << std::setprecision(2) << inc / 10000.0
+              << " - " << std::fixed << std::setprecision(2) << dec / 10000.0 << "\n";
 }
 
 void LogManager::ReportFinance() {

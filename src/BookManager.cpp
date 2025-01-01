@@ -110,6 +110,15 @@ std::ostream &operator<<(std::ostream &out, const Book &book) {
 // BookManager 实现
 BookManager::BookManager() {
     BookStorage.initialise("book_data");
+    financeFile.initialise("finance_records");
+
+    int count = 0;
+    financeFile.get_info(count, 1);
+    for(int i = 0; i < count; i++) {
+        long long record;
+        financeFile.read(record, sizeof(int) + i * sizeof(long long));
+        financeRecords.push_back(record);
+    }
     BookID_pos.init("book_id_to_pos");
     BookISBN_pos.init("isbn_to_pos");
     BookName_pos.init("name_to_pos");
@@ -117,6 +126,13 @@ BookManager::BookManager() {
     Keyword_pos.init("keyword_to_pos");
 
     BookStorage.get_info(bookCount, 1);
+}
+
+void BookManager::addFinanceRecord(long long amount) {
+    financeRecords.push_back(amount);
+    int count = financeRecords.size();
+    financeFile.write_info(count, 1);
+    financeFile.write(amount);
 }
 
 void BookManager::validateSelected(const AccountManager &accounts) const {
@@ -288,7 +304,7 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     std::cout << std::fixed << std::setprecision(2) << totalCost << '\n';
 
     // 添加财务记录，注意Buy是收入，所以是正值
-    financeRecords.push_back(std::llround(totalCost * 10000));
+    addFinanceRecord(std::llround(totalCost * 10000));
 
     Log buyLog;
     buyLog.behavoir = ActionType::BUY;
@@ -555,5 +571,5 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     importLog.Amount = total_cost;
     logs.AddLog(importLog);
 
-    financeRecords.push_back(-std::llround(total_cost * 10000));
+    addFinanceRecord(-std::llround(total_cost * 10000));
 }
