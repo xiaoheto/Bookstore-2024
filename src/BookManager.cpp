@@ -287,6 +287,9 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     double totalCost = book.Price * quantity;
     std::cout << std::fixed << std::setprecision(2) << totalCost << '\n';
 
+    // 添加财务记录，注意Buy是收入，所以是正值
+    financeRecords.push_back(std::llround(totalCost * 10000));
+
     Log buyLog;
     buyLog.behavoir = ActionType::BUY;
     buyLog.isIncome = true;
