@@ -86,19 +86,9 @@ int main() {
                books.ImportBook(command,accounts,logs);
            }
            else if (order == "report") {
-               std::string temp = command.getNext();
-               if (temp == "finance") {
-                   logs.ReportFinance();
-               }
-               else if (temp == "employee") {
-                   //TODO
-               }
+               //TODO:完成LogManager后补充
            }
-           else if (order == "log") {
-               if (accounts.getCurrentPrivilege() != 7) {
-                   throw Error("Invalid\n");
-               }
-               logs.ShowLog();
+           else if (order == "log") {//TODO
            }
            else {
                throw Error("Invalid\n");
