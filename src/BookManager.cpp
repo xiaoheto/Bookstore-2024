@@ -234,10 +234,22 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
     std::sort(results.begin(), results.end());
     if (results.empty()) {
         std::cout << '\n';
-    } else {
+    }
+    if (account.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
+    else {
         for (const auto &book : results) {
             std::cout << book;
         }
+    }
+    if (!account.loginStack.empty()) {
+        Log showLog;
+        showLog.behavoir = ActionType::SHOW;
+        strcpy(showLog.owner, account.loginStack.back().account.UserId.getUserId().c_str());
+        showLog.isIncome = false;
+        showLog.Amount = 0;
+        log.AddLog(showLog);
     }
 }
 
@@ -253,13 +265,10 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
 
     std::string quantityStr = input.getNext();
     int quantity;
-    try {
-        quantity = std::stoi(quantityStr);
-        if (quantity <= 0) throw Error("Invalid\n");
-    } catch (...) {
+    quantity = std::stoi(quantityStr);
+    if (quantity <= 0) {
         throw Error("Invalid\n");
     }
-
     std::vector<int> positions;
     BookISBN_pos.find_node(isbn, positions);
     if (positions.empty()) {
@@ -279,10 +288,15 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     std::cout << std::fixed << std::setprecision(2) << totalCost << '\n';
 
     Log buyLog;
-    buyLog.isIncome = true;
-    buyLog.Amount = totalCost;
     buyLog.behavoir = ActionType::BUY;
+    buyLog.isIncome = true;
+    strcpy(buyLog.owner ,accounts.loginStack.back().account.UserId.getUserId().c_str());
+    // 确保Amount的精度和输出一致
+    buyLog.Amount = std::round(totalCost * 10000) / 10000.0;
     logs.AddLog(buyLog);
+
+    financeRecords.push_back(std::llround(totalCost * 10000));
+
 }
 
 void BookManager::Select(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -316,6 +330,12 @@ void BookManager::Select(Command &input, AccountManager &accounts, LogManager &l
         BookStorage.read(book, positions[0]);
         accounts.selectBook(book.book_id);
     }
+    Log selectLog;
+    selectLog.behavoir = ActionType::SELECT;
+    strcpy(selectLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());
+    selectLog.isIncome = false;
+    selectLog.Amount = 0;
+    logs.AddLog(selectLog);
 }
 
 void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -350,18 +370,16 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
         try {
             if (command.substr(0,6) == "-ISBN=") {
                 if (modified_isbn) throw Error("Invalid\n");
-                if (command.length() <= 7 || command[6] != '\"' || command.back() != '\"') {
-                    throw Error("Invalid\n");
-                }
-                std::string isbn = command.substr(7, command.length() - 8);
+                std::string isbn = command.substr(6);
                 if (!Validator::isValidISBN(isbn)) {
                     throw Error("Invalid\n");
                 }
 
-                // 检查新ISBN是否已存在或与原ISBN相同
+                // 检查新ISBN是否与原ISBN相同
                 if (strcmp(isbn.c_str(), oldBook.ISBN.ISBN) == 0) {
                     throw Error("Invalid\n");
                 }
+                // 检查新ISBN是否已存在
                 std::vector<int> check;
                 BookISBN_pos.find_node(isbn, check);
                 if (!check.empty()) {
@@ -412,7 +430,6 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
             }
             else if (command.substr(0,7) == "-price=") {
                 if (modified_price) throw Error("Invalid\n");
-
                 std::string price_str = command.substr(7);
                 if (!Validator::isValidPrice(price_str)) {
                     throw Error("Invalid\n");
@@ -439,34 +456,42 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
     // 如果有修改，更新图书信息和索引
     if (modified_isbn || modified_name || modified_author ||
         modified_keyword || modified_price) {
+
         // 更新索引
         if (modified_isbn) {
-            BookISBN_pos.delete_node(DataNode(oldBook.ISBN.ISBN, positions[0]));
+            DataNode oldISBNNode(oldBook.ISBN.ISBN, positions[0]);
+            BookISBN_pos.delete_node(oldISBNNode);
             BookISBN_pos.insert_node(DataNode(newBook.ISBN.ISBN, positions[0]));
         }
+
         if (modified_name) {
-            BookName_pos.delete_node(DataNode(oldBook.book_name.Bookname, positions[0]));
+            DataNode oldNameNode(oldBook.book_name.Bookname, positions[0]);
+            BookName_pos.delete_node(oldNameNode);
             BookName_pos.insert_node(DataNode(newBook.book_name.Bookname, positions[0]));
         }
+
         if (modified_author) {
-            Author_pos.delete_node(DataNode(oldBook.author_name.Author, positions[0]));
+            DataNode oldAuthorNode(oldBook.author_name.Author, positions[0]);
+            Author_pos.delete_node(oldAuthorNode);
             Author_pos.insert_node(DataNode(newBook.author_name.Author, positions[0]));
         }
+
         if (modified_keyword) {
-            // 删除旧关键词
-            std::string old_keywords(oldBook.key_word.Keyword);
-            std::istringstream old_ss(old_keywords);
-            std::string old_keyword;
-            while (std::getline(old_ss, old_keyword, '|')) {
-                Keyword_pos.delete_node(DataNode(old_keyword, positions[0]));
+            // 删除所有旧关键词
+            std::string oldKeywords(oldBook.key_word.Keyword);
+            std::istringstream old_ss(oldKeywords);
+            std::string oldKeyword;
+            while (std::getline(old_ss, oldKeyword, '|')) {
+                DataNode oldKeywordNode(oldKeyword, positions[0]);
+                Keyword_pos.delete_node(oldKeywordNode);
             }
 
-            // 添加新关键词
-            std::string new_keywords(newBook.key_word.Keyword);
-            std::istringstream new_ss(new_keywords);
-            std::string new_keyword;
-            while (std::getline(new_ss, new_keyword, '|')) {
-                Keyword_pos.insert_node(DataNode(new_keyword, positions[0]));
+            // 添加所有新关键词
+            std::string newKeywords(newBook.key_word.Keyword);
+            std::istringstream new_ss(newKeywords);
+            std::string newKeyword;
+            while (std::getline(new_ss, newKeyword, '|')) {
+                Keyword_pos.insert_node(DataNode(newKeyword, positions[0]));
             }
         }
 
@@ -476,13 +501,17 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
         // 添加日志
         Log modifyLog;
         modifyLog.behavoir = ActionType::MODIFYBOOK;
-        modifyLog.use = &accounts.loginStack.back().account;
+        strcpy(modifyLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());
+        modifyLog.isIncome = false;
         modifyLog.Amount = 0;
         logs.AddLog(modifyLog);
     }
 }
 
 void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManager &logs) {
+    if (accounts.loginStack.empty()) {
+        throw Error("Invalid\n");
+    }
     if (accounts.getCurrentPrivilege() < 3 || input.count != 3) {
         throw Error("Invalid\n");
     }
@@ -497,18 +526,13 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     std::string quantity_str = input.getNext();
     std::string total_cost_str = input.getNext();
 
-    int quantity;
-    double total_cost;
-
-    try {
-        quantity = std::stoi(quantity_str);
-        if (quantity <= 0) throw Error("Invalid\n");
-
-        total_cost = std::stod(total_cost_str);
-        if (total_cost < 0) throw Error("Invalid\n");
-    } catch (...) {
+    // 使用 Validator 进行验证
+    if (!Validator::isValidQuantity(quantity_str) || !Validator::isValidPrice(total_cost_str)) {
         throw Error("Invalid\n");
     }
+
+    int quantity = std::stoi(quantity_str);
+    double total_cost = std::stod(total_cost_str);
 
     // 获取图书信息
     std::vector<int> positions;
@@ -524,11 +548,12 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     book.TotalCost += total_cost;
     BookStorage.update(book, positions[0]);
 
-    // 添加日志
     Log importLog;
+    strcpy(importLog.owner ,accounts.loginStack.back().account.UserId.getUserId().c_str());
     importLog.behavoir = ActionType::IMPORTBOOK;
-    importLog.use = &accounts.loginStack.back().account;
     importLog.isIncome = false;
     importLog.Amount = total_cost;
     logs.AddLog(importLog);
+
+    financeRecords.push_back(-std::llround(total_cost * 10000));
 }
