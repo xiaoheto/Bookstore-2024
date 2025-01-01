@@ -97,8 +97,6 @@ private:
     void validateSelected(const AccountManager &accounts) const;
 
 public:
-    std::vector<long long >financeRecords;
-
     BookManager();
     
     // 图书查询
