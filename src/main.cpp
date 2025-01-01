@@ -57,7 +57,7 @@ int main() {
                    else {
                        std::string temp = cur_command.getNext();
                        if (temp.empty()) {
-                           logs.ShowFinance(-1,books.financeRecords);
+                           logs.ShowFinance();
                        }
                        else {
                            for(int i = 0;i < temp.size();++i) {
@@ -65,7 +65,7 @@ int main() {
                                    throw Error("Invalid\n");
                                }
                            }
-                           logs.ShowFinance(stoi(temp), books.financeRecords);
+                           logs.ShowFinance(stoi(temp));
                        }
                    }
                }
@@ -91,7 +91,7 @@ int main() {
                    logs.ReportFinance();
                }
                else if (temp == "employee") {
-                   logs.ReportEmployee();
+                   //TODO
                }
            }
            else if (order == "log") {
