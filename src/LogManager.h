@@ -44,7 +44,7 @@ private:
 public:
     LogManager();
 
-    void ShowFinance(int need, const std::vector<long long> &records);
+    void ShowFinance(int need = -1);
 
     void ReportFinance();
 
