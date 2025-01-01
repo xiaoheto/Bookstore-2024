@@ -3,38 +3,45 @@ LogManager::LogManager() {
     logStorage.initialise("log_Storage");
 }
 
-void LogManager::ShowFinance(int need, const std::vector<long long> &records) {
+void LogManager::ShowFinance(int need) {
     if (need == 0) {
         std::cout << '\n';
         return;
     }
 
-    int total = records.size();
-    if (total == 0) {
+    logStorage.get_info(financeCount, 1);
+
+    if (financeCount == 0) {
         std::cout << "+ 0.00 - 0.00\n";
         return;
     }
 
-    if (need > total) {
+    if (need > financeCount) {
         throw Error("Invalid\n");
     }
 
     if (need == -1) {
-        need = total;
+        need = financeCount;
     }
 
-    long long inc = 0, dec = 0;
-    // 从最近的记录开始读取指定数量
-    for (int i = total - 1; i >= total - need; i--) {
-        if (records[i] > 0) {
-            inc += records[i];
-        } else {
-            dec -= records[i];  // 注意这里是减去负数
+    double inc = 0, dec = 0;
+    const int headerSize = 2 * sizeof(int);
+
+    // 确保从后往前读最近的 need 笔交易
+    for (int i = financeCount - 1; i >= financeCount - need && i >= 0; i--) {
+        Log temp;
+        logStorage.read(temp, headerSize + i * sizeof(Log));
+
+        if (temp.behavoir == ActionType::BUY) {
+            inc += temp.Amount;
+        }
+        else if (temp.behavoir == ActionType::IMPORTBOOK) {
+            dec += temp.Amount;
         }
     }
 
-    std::cout << "+ " << std::fixed << std::setprecision(2) << inc / 10000.0
-              << " - " << std::fixed << std::setprecision(2) << dec / 10000.0 << "\n";
+    std::cout << "+ " << std::fixed << std::setprecision(2) << inc
+              << " - " << std::fixed << std::setprecision(2) << dec << "\n";
 }
 
 void LogManager::ReportFinance() {
