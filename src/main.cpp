@@ -57,7 +57,7 @@ int main() {
                    else {
                        std::string temp = cur_command.getNext();
                        if (temp.empty()) {
-                           logs.ShowFinance();
+                           logs.ShowFinance(-1,books.financeRecords);
                        }
                        else {
                            for(int i = 0;i < temp.size();++i) {
@@ -65,7 +65,7 @@ int main() {
                                    throw Error("Invalid\n");
                                }
                            }
-                           logs.ShowFinance(stoi(temp));
+                           logs.ShowFinance(stoi(temp), books.financeRecords);
                        }
                    }
                }
@@ -86,9 +86,19 @@ int main() {
                books.ImportBook(command,accounts,logs);
            }
            else if (order == "report") {
-               //TODO:完成LogManager后补充
+               std::string temp = command.getNext();
+               if (temp == "finance") {
+                   logs.ReportFinance();
+               }
+               else if (temp == "employee") {
+                   logs.ReportEmployee();
+               }
            }
-           else if (order == "log") {//TODO
+           else if (order == "log") {
+               if (accounts.getCurrentPrivilege() != 7) {
+                   throw Error("Invalid\n");
+               }
+               logs.ShowLog();
            }
            else {
                throw Error("Invalid\n");

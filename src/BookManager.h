@@ -58,24 +58,24 @@ private:
     double Price;
     int Quantity;
     double TotalCost;
-    
+
     friend class BookManager;
 public:
     Book() : book_id(0), Price(0), Quantity(0), TotalCost(0) {}
-    
+
     // 完整构造函数
-    Book(int id, const std::string &isbn, const std::string &bookName, 
+    Book(int id, const std::string &isbn, const std::string &bookName,
          const std::string &authorName, const std::string &keyWord,
          double price, int quantity, double totalcost);
-    
+
     // 仅ISBN构造函数
     Book(int id, const std::string &isbn);
-    
+
     bool operator<(const Book &rhs) const;
     bool operator>(const Book &rhs) const;
     bool operator<=(const Book &rhs) const;
     bool operator>=(const Book &rhs) const;
-    
+
     friend std::ostream &operator<<(std::ostream &out, const Book &book);
 };
 
@@ -97,23 +97,25 @@ private:
     void validateSelected(const AccountManager &accounts) const;
 
 public:
+    std::vector<long long >financeRecords;
+
     BookManager();
-    
+
     // 图书查询
     void Show(Command &input, AccountManager &account, LogManager &log);
-    
+
     // 图书购买
     void Buy(Command &input, AccountManager &accounts, LogManager &logs);
-    
+
     // 选择图书
     void Select(Command &input, AccountManager &accounts, LogManager &logs);
-    
+
     // 修改图书信息
     void Modify(Command &input, AccountManager &accounts, LogManager &logs);
-    
+
     // 图书进货
     void ImportBook(Command &input, AccountManager &accounts, LogManager &logs);
-    
+
     // 获取当前图书总数
     int getBookCount() const { return bookCount; }
 };
