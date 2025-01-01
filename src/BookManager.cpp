@@ -243,14 +243,6 @@ void BookManager::Show(Command &input, AccountManager &account, LogManager &log)
             std::cout << book;
         }
     }
-    if (!account.loginStack.empty()) {
-        Log showLog;
-        showLog.behavoir = ActionType::SHOW;
-        strcpy(showLog.owner, account.loginStack.back().account.UserId.getUserId().c_str());
-        showLog.isIncome = false;
-        showLog.Amount = 0;
-        log.AddLog(showLog);
-    }
 }
 
 void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -290,9 +282,8 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     Log buyLog;
     buyLog.behavoir = ActionType::BUY;
     buyLog.isIncome = true;
-    strcpy(buyLog.owner ,accounts.loginStack.back().account.UserId.getUserId().c_str());
     // 确保Amount的精度和输出一致
-    buyLog.Amount = std::round(totalCost * 100) / 100.0;
+    buyLog.Amount = std::round(totalCost * 10000) / 10000.0;
     logs.AddLog(buyLog);
 }
 
@@ -327,12 +318,6 @@ void BookManager::Select(Command &input, AccountManager &accounts, LogManager &l
         BookStorage.read(book, positions[0]);
         accounts.selectBook(book.book_id);
     }
-    Log selectLog;
-    selectLog.behavoir = ActionType::SELECT;
-    strcpy(selectLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());
-    selectLog.isIncome = false;
-    selectLog.Amount = 0;
-    logs.AddLog(selectLog);
 }
 
 void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -498,8 +483,7 @@ void BookManager::Modify(Command &input, AccountManager &accounts, LogManager &l
         // 添加日志
         Log modifyLog;
         modifyLog.behavoir = ActionType::MODIFYBOOK;
-        strcpy(modifyLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());
-        modifyLog.isIncome = false;
+        modifyLog.use = &accounts.loginStack.back().account;
         modifyLog.Amount = 0;
         logs.AddLog(modifyLog);
     }
@@ -546,7 +530,6 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     BookStorage.update(book, positions[0]);
 
     Log importLog;
-    strcpy(importLog.owner ,accounts.loginStack.back().account.UserId.getUserId().c_str());
     importLog.behavoir = ActionType::IMPORTBOOK;
     importLog.isIncome = false;
     importLog.Amount = total_cost;
