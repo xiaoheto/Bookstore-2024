@@ -110,21 +110,12 @@ std::ostream &operator<<(std::ostream &out, const Book &book) {
 // BookManager 实现
 BookManager::BookManager() {
     BookStorage.initialise("book_data");
-    financeFile.initialise("finance_records");
-
-    int count = 0;
-    financeFile.get_info(count, 1);
-    for(int i = 0; i < count; i++) {
-        long long record;
-        financeFile.read(record, sizeof(int) + i * sizeof(long long));
-        financeRecords.push_back(record);
-    }
+    financeLog = Log_System(); // 使用Log_System替代自己的实现
     BookID_pos.init("book_id_to_pos");
     BookISBN_pos.init("isbn_to_pos");
     BookName_pos.init("name_to_pos");
     Author_pos.init("author_to_pos");
     Keyword_pos.init("keyword_to_pos");
-
     BookStorage.get_info(bookCount, 1);
 }
 
@@ -312,7 +303,7 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     buyLog.Amount = totalCost;
     strcpy(buyLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());  // 添加这行
     logs.AddLog(buyLog);
-
+    financeLog.add_finance("buy", totalCost);
 }
 
 void BookManager::Select(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -571,5 +562,5 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     importLog.Amount = total_cost;
     logs.AddLog(importLog);
 
-    addFinanceRecord(-std::llround(total_cost * 10000));
+    financeLog.add_finance("import", total_cost);
 }

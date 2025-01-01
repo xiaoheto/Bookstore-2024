@@ -14,6 +14,7 @@ int main() {
    LogManager logs;
    BookManager books;
    AccountManager accounts;
+    Log_System financeLog;
 
    while(getline(std::cin,input)) {
        try {
@@ -57,7 +58,7 @@ int main() {
                    else {
                        std::string temp = cur_command.getNext();
                        if (temp.empty()) {
-                           logs.ShowFinance(-1, books.getFinanceRecords());
+                           financeLog.show_fin();
                        }
                        else {
                            for(int i = 0;i < temp.size();++i) {
@@ -65,7 +66,7 @@ int main() {
                                    throw Error("Invalid\n");
                                }
                            }
-                           logs.ShowFinance(stoi(temp), books.getFinanceRecords());
+                           financeLog.show_fin(stoi(temp));
                        }
                    }
                }

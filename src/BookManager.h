@@ -88,6 +88,7 @@ private:
     DataFile BookName_pos;
     DataFile Author_pos;
     DataFile Keyword_pos;
+    Log_System financeLog;
 
     friend class LogManager;
     // 私有辅助函数
@@ -98,6 +99,8 @@ private:
     void validateSelected(const AccountManager &accounts) const;
 
 public:
+    Log_System& getFinanceLog() { return financeLog; }
+
     const std::vector<long long>& getFinanceRecords() const {
         return financeRecords;
     }
