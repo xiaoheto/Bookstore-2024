@@ -40,6 +40,7 @@ class LogManager {
 private:
     MemoryRiver<Log> logStorage;
     int financeCount = 0; // 交易笔数
+std::vector<long long> financeRecords;
 
 public:
     LogManager();
