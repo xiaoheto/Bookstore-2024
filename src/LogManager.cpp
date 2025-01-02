@@ -3,6 +3,40 @@ LogManager::LogManager() {
     logStorage.initialise("log_Storage");
 }
 
+void LogManager::ShowFinance(int need, const std::vector<long long> &records) {
+    if (need == 0) {
+        std::cout << '\n';
+        return;
+    }
+
+    int total = records.size();
+    if (total == 0) {
+        std::cout << "+ 0.00 - 0.00\n";
+        return;
+    }
+
+    if (need > total) {
+        throw Error("Invalid\n");
+    }
+
+    if (need == -1) {
+        need = total;
+    }
+
+    long long inc = 0, dec = 0;
+    // 从最近的记录开始读取指定数量
+    for (int i = total - 1; i >= total - need; i--) {
+        if (records[i] > 0) {
+            inc += records[i];
+        } else {
+            dec -= records[i];  // 注意这里是减去负数
+        }
+    }
+
+    std::cout << "+ " << std::fixed << std::setprecision(2) << inc / 10000.0
+              << " - " << std::fixed << std::setprecision(2) << dec / 10000.0 << "\n";
+}
+
 void LogManager::ReportFinance() {
     logStorage.get_info(financeCount, 1);
     const int headerSize = 2 * sizeof(int);
