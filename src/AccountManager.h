@@ -16,7 +16,7 @@ private:
 public:
     AccountId() = default;
     AccountId(const std::string user_id);
-
+    
     std::string getUserId() const;
     bool operator==(const AccountId &other) const;
     bool operator<(const AccountId &other) const;
@@ -28,14 +28,14 @@ private:
     char UserName[31];
     char password[31];
     int privilege;
-
+    
     friend class AccountManager;
     friend class BookManager;
 public:
     Account() = default;
-    Account(const std::string &user_id, const std::string &user_name,
+    Account(const std::string &user_id, const std::string &user_name, 
             const std::string &password_, int privilege_ = 0);
-
+    
     int getPrivilege();
     void changePassword(const std::string &newPassword);
 };
@@ -44,7 +44,7 @@ class LogInAccount {
 private:
     Account account;
     int selectedBookId;
-
+    
     friend class AccountManager;
     friend class BookManager;
 public:
@@ -79,7 +79,7 @@ public:
 
     // 获取当前登录账户
     Account* getCurrentAccount();
-
+    
     friend class BookManager;
 };
 
