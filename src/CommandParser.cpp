@@ -32,10 +32,9 @@ void Command::countArguments() {
         if (i < input.length() && input[i] != '\r' && input[i] != '\n') {
             count++;
             // 找到下一个分隔符
-            while (i < input.length() && input[i] != split_char &&
-                   input[i] != '\r' && input[i] != '\n') {
+            while (i < input.length() && input[i] != split_char && input[i] != '\r' && input[i] != '\n') {
                 i++;
-                   }
+            }
         }
     }
 }
@@ -80,10 +79,9 @@ void Command::setSplit(char new_split_char) {
 std::istream &operator>>(std::istream &in, Command &obj) {
     std::getline(in, obj.input);
     obj.position = 0;
-    while (obj.position < obj.input.length() &&
-           obj.input[obj.position] == obj.split_char) {
+    while (obj.position < obj.input.length() && obj.input[obj.position] == obj.split_char) {
         obj.position++;
-           }
+    }
     obj.countArguments();
     return in;
 }
