@@ -110,20 +110,13 @@ std::ostream &operator<<(std::ostream &out, const Book &book) {
 // BookManager 实现
 BookManager::BookManager() {
     BookStorage.initialise("book_data");
-    financeLog = Log_System(); // 使用Log_System替代自己的实现
     BookID_pos.init("book_id_to_pos");
     BookISBN_pos.init("isbn_to_pos");
     BookName_pos.init("name_to_pos");
     Author_pos.init("author_to_pos");
     Keyword_pos.init("keyword_to_pos");
-    BookStorage.get_info(bookCount, 1);
-}
 
-void BookManager::addFinanceRecord(long long amount) {
-    financeRecords.push_back(amount);
-    int count = financeRecords.size();
-    financeFile.write_info(count, 1);
-    financeFile.write(amount);
+    BookStorage.get_info(bookCount, 1);
 }
 
 void BookManager::validateSelected(const AccountManager &accounts) const {
@@ -294,16 +287,14 @@ void BookManager::Buy(Command &input, AccountManager &accounts, LogManager &logs
     double totalCost = book.Price * quantity;
     std::cout << std::fixed << std::setprecision(2) << totalCost << '\n';
 
-    // 添加财务记录，注意Buy是收入，所以是正值
-    addFinanceRecord(std::llround(totalCost * 10000));
-
     Log buyLog;
     buyLog.behavoir = ActionType::BUY;
     buyLog.isIncome = true;
     buyLog.Amount = totalCost;
-    strcpy(buyLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());  // 添加这行
+    strcpy(buyLog.owner, accounts.loginStack.back().account.UserId.getUserId().c_str());
     logs.AddLog(buyLog);
-    financeLog.add_finance("buy", totalCost);
+
+    financeRecords.push_back(std::llround(totalCost * 10000));  // 正数表示收入
 }
 
 void BookManager::Select(Command &input, AccountManager &accounts, LogManager &logs) {
@@ -562,5 +553,5 @@ void BookManager::ImportBook(Command &input, AccountManager &accounts, LogManage
     importLog.Amount = total_cost;
     logs.AddLog(importLog);
 
-    financeLog.add_finance("import", total_cost);
+    financeRecords.push_back(-std::llround(total_cost * 10000));
 }
